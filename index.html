@@ -233,7 +233,7 @@
         <span class="logo-clip">◆ clip</span>
         <span class="logo-sync">sync</span>
       </div>
-      <span class="version-badge">v1.1</span>
+      <span class="version-badge">v1.2</span>
     </div>
     <div class="header-line"></div>
     <p class="header-sub">paste on one device · copy on another</p>
@@ -296,9 +296,9 @@
 </div>
 
 <script>
-  const VERSION  = "v1.1";
+  const VERSION  = "v1.2";
   const API_BASE = "https://kvdb.io";
-  const BUCKET   = "9Hb2ThkCmpHWGPtjb4BPLK";
+  const BUCKET   = "RisDHfATAFjYwkySi9QTy4";
   const POLL_MS  = 3000;
 
   let roomCode  = "";
@@ -402,7 +402,7 @@
   // ── Poll ─────────────────────────────────────────────
   async function poll() {
     const data = await kvGet();
-    if (!Array.isArray(data)) return;
+    if (!Array.isArray(data) || data.length === 0) return; // never wipe existing entries on empty/error
     const topId = data[0]?.id;
     if (prevTopId !== null && topId && topId !== prevTopId) {
       flashNext = true;
