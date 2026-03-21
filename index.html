@@ -10,46 +10,25 @@
   <title>ClipSync</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap');
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #0a0a0a;
-      --surface: #0f0f0f;
-      --surface2: #141414;
-      --border: #1e1e1e;
-      --border2: #262626;
-      --text: #e0e0d8;
-      --text-muted: #888880;
-      --text-dim: #333;
-      --green: #3ecf3e;
-      --green-dim: #1a4a1a;
-      --green-border: #2a6a2a;
-      --blue: #4a9aff;
+      --bg: #0a0a0a; --surface: #0f0f0f; --surface2: #141414;
+      --border: #1e1e1e; --border2: #262626;
+      --text: #e0e0d8; --text-muted: #888880; --text-dim: #333;
+      --green: #3ecf3e; --green-dim: #1a4a1a; --green-border: #2a6a2a;
+      --blue: #4a9aff; --yellow: #f0c040; --red: #cf4e3e;
       --mono: 'DM Mono', 'Courier New', monospace;
       --sans: 'DM Sans', system-ui, sans-serif;
     }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      -webkit-font-smoothing: antialiased;
-    }
-
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); -webkit-font-smoothing: antialiased; }
     body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; flex-direction: column; align-items: center;
       padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
       padding-top: max(env(safe-area-inset-top), 32px);
       overflow-y: auto;
     }
-
     .wrap { width: 100%; max-width: 560px; }
 
     /* Header */
@@ -58,167 +37,116 @@
     .header-logo { display: flex; align-items: baseline; gap: 8px; }
     .logo-clip { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 4px; color: #444; text-transform: uppercase; }
     .logo-sync { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 4px; color: var(--green); text-transform: uppercase; }
-    .version-badge {
-      font-family: var(--mono); font-size: 10px; color: #2a2a2a;
-      background: #111; border: 1px solid #1a1a1a; border-radius: 3px;
-      padding: 2px 7px; letter-spacing: 0.5px; user-select: none;
-    }
+    .header-right { display: flex; align-items: center; gap: 8px; }
+    .version-badge { font-family: var(--mono); font-size: 10px; color: #2a2a2a; background: #111; border: 1px solid #1a1a1a; border-radius: 3px; padding: 2px 7px; letter-spacing: 0.5px; user-select: none; }
+    .settings-btn { background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--text-dim); font-family: var(--mono); font-size: 10px; padding: 2px 8px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s; }
+    .settings-btn:hover { color: var(--text-muted); border-color: #333; }
     .header-line { height: 1px; background: linear-gradient(90deg, #2a7a2a44, transparent); margin-bottom: 8px; }
     .header-sub { font-size: 11px; color: var(--text-dim); font-family: var(--sans); letter-spacing: 0.3px; }
 
-    /* Room bar */
-    .room-bar {
+    /* Status bar */
+    .status-bar {
       display: flex; align-items: center; gap: 8px;
-      padding: 8px 12px; background: var(--surface);
+      padding: 7px 12px; background: var(--surface);
       border: 1px solid var(--border); border-radius: 6px; margin-bottom: 20px;
     }
-    .room-label { font-size: 10px; color: var(--text-dim); font-family: var(--sans); white-space: nowrap; }
-    .room-code { font-size: 12px; color: var(--text-muted); letter-spacing: 1px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .room-btn {
-      background: transparent; border: 1px solid var(--border2); border-radius: 4px;
-      color: var(--text-dim); font-family: var(--mono); font-size: 9px;
-      padding: 3px 8px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s; white-space: nowrap;
-    }
-    .room-btn:hover { color: var(--text-muted); border-color: #444; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
+    .status-dot.ok { background: var(--green); }
+    .status-dot.err { background: var(--red); }
+    .status-dot.warn { background: var(--yellow); }
+    .status-text { font-size: 10px; color: var(--text-dim); font-family: var(--sans); flex: 1; }
+    .status-count { font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
 
     /* Input */
-    .input-box {
-      border: 1px solid var(--border2); border-radius: 6px;
-      overflow: hidden; background: var(--surface); margin-bottom: 24px; transition: border-color 0.15s;
-    }
+    .input-box { border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; background: var(--surface); margin-bottom: 16px; transition: border-color 0.15s; }
     .input-box:focus-within { border-color: #333; }
-    textarea {
-      width: 100%; background: transparent; border: none; color: var(--text);
-      font-family: var(--mono); font-size: 13px; line-height: 1.6;
-      padding: 14px 16px; resize: none; letter-spacing: 0.2px; -webkit-appearance: none;
-    }
+    textarea { width: 100%; background: transparent; border: none; color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 14px 16px; resize: none; letter-spacing: 0.2px; -webkit-appearance: none; }
     textarea:focus { outline: none; }
     textarea::placeholder { color: #2e2e2e; }
-    .input-footer {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 12px; border-top: 1px solid var(--border); background: #0c0c0c;
-    }
+    .input-footer { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border); background: #0c0c0c; }
     .input-hint { font-size: 10px; color: var(--text-dim); font-family: var(--sans); }
-    .send-btn {
-      background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border);
-      border-radius: 4px; padding: 5px 18px; font-family: var(--mono);
-      font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s;
-    }
+    .send-btn { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); border-radius: 4px; padding: 5px 18px; font-family: var(--mono); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; }
     .send-btn:disabled { background: #111; color: var(--text-dim); border-color: var(--border); cursor: not-allowed; }
     .send-btn:not(:disabled):active { opacity: 0.7; }
 
+    /* Bulk actions */
+    .bulk-bar { display: flex; gap: 8px; margin-bottom: 16px; }
+    .bulk-btn {
+      flex: 1; padding: 8px 12px; border-radius: 5px; font-family: var(--mono);
+      font-size: 11px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.15s; border: 1px solid;
+    }
+    .bulk-copy { background: var(--green-dim); color: var(--green); border-color: var(--green-border); }
+    .bulk-copy:hover { background: #1f5a1f; }
+    .bulk-copy.did-copy { background: #0f3a0f; color: #2aaf2a; }
+    .bulk-copy:disabled { background: #111; color: var(--text-dim); border-color: var(--border); cursor: not-allowed; }
+    .bulk-clear { background: transparent; color: var(--text-dim); border-color: var(--border); }
+    .bulk-clear:hover { color: var(--red); border-color: #3a1a1a; }
+    .bulk-clear:disabled { opacity: 0.3; cursor: not-allowed; }
+
     /* Entries */
-    .entries { display: flex; flex-direction: column; gap: 8px; }
-    .empty {
-      border: 1px dashed var(--border); border-radius: 6px; padding: 36px 20px;
-      text-align: center; color: var(--text-dim); font-size: 12px;
-      font-family: var(--sans); line-height: 1.8;
-    }
-    .entry {
-      border: 1px solid var(--border); border-radius: 6px;
-      padding: 12px 14px; background: var(--surface); transition: background 0.15s;
-    }
+    .entries { display: flex; flex-direction: column; gap: 6px; }
+    .empty { border: 1px dashed var(--border); border-radius: 6px; padding: 36px 20px; text-align: center; color: var(--text-dim); font-size: 12px; font-family: var(--sans); line-height: 1.8; }
+    .entry { border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; background: var(--surface); transition: background 0.15s; }
     .entry:hover { background: var(--surface2); }
     .entry.new-flash { animation: flashIn 0.8s ease-out; }
-    @keyframes flashIn {
-      0%   { background: #1a2e1a; border-color: #2a5a2a; }
-      100% { background: var(--surface); border-color: var(--border); }
-    }
-    .entry-inner { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    @keyframes flashIn { 0% { background: #1a2e1a; border-color: #2a5a2a; } 100% { background: var(--surface); border-color: var(--border); } }
+    .entry-inner { display: flex; align-items: flex-start; gap: 10px; }
+    .entry-num { font-size: 10px; color: var(--text-dim); flex-shrink: 0; padding-top: 2px; min-width: 18px; text-align: right; }
     .entry-content { flex: 1; min-width: 0; }
-    .entry-text { font-size: 12px; color: #b0b0a8; word-break: break-all; line-height: 1.6; display: block; margin-bottom: 4px; }
-    .entry-text.is-url { color: var(--blue); text-decoration: none; }
-    .entry-text.is-url:hover { text-decoration: underline; }
+    .entry-url { font-size: 12px; color: var(--blue); word-break: break-all; line-height: 1.5; display: block; text-decoration: none; margin-bottom: 3px; }
+    .entry-url:hover { text-decoration: underline; }
+    .entry-text { font-size: 12px; color: #b0b0a8; word-break: break-all; line-height: 1.5; display: block; margin-bottom: 3px; }
     .entry-time { font-size: 10px; color: var(--text-dim); font-family: var(--sans); }
-    .entry-actions { display: flex; gap: 6px; flex-shrink: 0; }
-    .copy-btn {
-      background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2);
-      border-radius: 4px; padding: 4px 12px; font-family: var(--mono);
-      font-size: 10px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s; -webkit-appearance: none;
-    }
-    .copy-btn.did-copy { background: var(--green-dim); color: var(--green); border-color: var(--green-border); }
-    .del-btn {
-      background: transparent; color: var(--text-dim); border: 1px solid var(--border);
-      border-radius: 4px; padding: 4px 8px; font-family: var(--mono); font-size: 10px;
-      cursor: pointer; opacity: 0; transition: opacity 0.15s; -webkit-appearance: none;
-    }
+    .entry-actions { display: flex; gap: 5px; flex-shrink: 0; }
+    .copy-one-btn { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 10px; font-family: var(--mono); font-size: 10px; cursor: pointer; transition: all 0.15s; -webkit-appearance: none; }
+    .copy-one-btn.did-copy { background: var(--green-dim); color: var(--green); border-color: var(--green-border); }
+    .del-btn { background: transparent; color: var(--text-dim); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; font-family: var(--mono); font-size: 10px; cursor: pointer; opacity: 0; transition: opacity 0.15s; -webkit-appearance: none; }
     .entry:hover .del-btn { opacity: 1; }
 
-    /* Debug panel */
-    .debug-section { margin-top: 32px; }
-    .debug-toggle {
-      display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;
-      padding: 6px 0; width: 100%; background: none; border: none;
-      color: var(--text-dim); font-family: var(--mono); font-size: 10px;
-      letter-spacing: 1px; text-align: left; transition: color 0.15s;
-    }
+    /* Debug */
+    .debug-section { margin-top: 28px; }
+    .debug-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 6px 0; width: 100%; background: none; border: none; color: var(--text-dim); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-align: left; transition: color 0.15s; }
     .debug-toggle:hover { color: #444; }
     .debug-caret { font-size: 8px; transition: transform 0.2s; display: inline-block; }
     .debug-caret.open { transform: rotate(90deg); }
-    .debug-panel {
-      display: none; border: 1px solid var(--border); border-radius: 6px;
-      background: #080808; overflow: hidden; margin-top: 4px;
-    }
+    .debug-panel { display: none; border: 1px solid var(--border); border-radius: 6px; background: #080808; overflow: hidden; margin-top: 4px; }
     .debug-panel.open { display: block; }
-    .debug-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 12px; border-bottom: 1px solid var(--border);
-    }
+    .debug-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); }
     .debug-title { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
-    .debug-clear {
-      background: none; border: 1px solid var(--border); border-radius: 3px;
-      color: var(--text-dim); font-family: var(--mono); font-size: 9px;
-      padding: 2px 8px; cursor: pointer; letter-spacing: 0.5px;
-    }
-    .debug-clear:hover { color: #555; }
-    .debug-log {
-      height: 180px; overflow-y: auto; padding: 8px 12px;
-      display: flex; flex-direction: column; gap: 3px;
-    }
+    .debug-clear { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--text-dim); font-family: var(--mono); font-size: 9px; padding: 2px 8px; cursor: pointer; }
+    .debug-log { height: 180px; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; }
     .debug-log::-webkit-scrollbar { width: 3px; }
     .debug-log::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-    .log-line { display: flex; gap: 8px; font-size: 10px; line-height: 1.5; font-family: var(--mono); }
+    .log-line { display: flex; gap: 8px; font-size: 10px; line-height: 1.5; }
     .log-time { color: #2a2a2a; white-space: nowrap; flex-shrink: 0; }
     .log-msg { word-break: break-all; }
-    .log-info  { color: #3a3a3a; }
-    .log-ok    { color: #2a6a2a; }
-    .log-warn  { color: #6a5010; }
-    .log-error { color: #6a1a1a; }
-    .log-empty { color: #222; font-size: 10px; font-family: var(--sans); padding: 4px 0; }
+    .log-info { color: #3a3a3a; } .log-ok { color: #2a6a2a; } .log-warn { color: #6a5010; } .log-error { color: #6a1a1a; }
+    .log-empty { color: #222; font-size: 10px; font-family: var(--sans); }
 
     /* Footer */
     .footer { margin-top: 16px; margin-bottom: 20px; text-align: center; font-size: 10px; color: #1e1e1e; font-family: var(--sans); }
 
     /* Toast */
-    .toast {
-      position: fixed; bottom: calc(env(safe-area-inset-bottom) + 24px);
-      left: 50%; transform: translateX(-50%) translateY(20px);
-      background: #1a1a1a; border: 1px solid #2a2a2a; color: var(--text-muted);
-      font-family: var(--sans); font-size: 12px; padding: 8px 18px;
-      border-radius: 20px; opacity: 0; transition: all 0.25s ease;
-      pointer-events: none; white-space: nowrap; z-index: 200;
-    }
+    .toast { position: fixed; bottom: calc(env(safe-area-inset-bottom) + 24px); left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1a1a; border: 1px solid #2a2a2a; color: var(--text-muted); font-family: var(--sans); font-size: 12px; padding: 8px 18px; border-radius: 20px; opacity: 0; transition: all 0.25s ease; pointer-events: none; white-space: nowrap; z-index: 200; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* Modal */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.85); z-index: 100;
-      align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 24px; width: 100%; max-width: 360px; }
-    .modal h2 { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
-    .modal p { font-size: 11px; color: var(--text-muted); font-family: var(--sans); line-height: 1.6; margin-bottom: 16px; }
-    .modal input {
-      width: 100%; background: var(--surface); border: 1px solid var(--border2);
-      border-radius: 5px; color: var(--text); font-family: var(--mono);
-      font-size: 13px; padding: 10px 12px; margin-bottom: 12px; -webkit-appearance: none;
-    }
-    .modal input:focus { outline: none; border-color: #444; }
-    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; }
-    .modal-cancel { background: transparent; border: 1px solid var(--border2); color: var(--text-dim); border-radius: 4px; padding: 7px 16px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
-    .modal-ok { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); border-radius: 4px; padding: 7px 16px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+    /* Setup / modal shared */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    .overlay.open { display: flex; }
+    .modal { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 28px; width: 100%; max-width: 480px; }
+    .modal h2 { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .modal-sub { font-size: 11px; color: var(--text-muted); font-family: var(--sans); line-height: 1.7; margin-bottom: 20px; }
+    .modal-sub a { color: var(--blue); }
+    .field-label { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 6px; display: block; font-family: var(--sans); }
+    .field-input { width: 100%; background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 12px; margin-bottom: 16px; -webkit-appearance: none; }
+    .field-input:focus { outline: none; border-color: #444; }
+    .field-note { font-size: 10px; color: var(--text-dim); font-family: var(--sans); margin-top: -12px; margin-bottom: 16px; line-height: 1.6; }
+    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+    .modal-cancel { background: transparent; border: 1px solid var(--border2); color: var(--text-dim); border-radius: 4px; padding: 8px 16px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+    .modal-ok { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); border-radius: 4px; padding: 8px 20px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
+    .modal-ok:disabled { opacity: 0.4; cursor: not-allowed; }
+    .setup-step { font-size: 10px; color: var(--text-dim); font-family: var(--sans); margin-bottom: 20px; }
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
 
     @media (max-width: 400px) { .input-hint { display: none; } }
   </style>
@@ -233,32 +161,40 @@
         <span class="logo-clip">◆ clip</span>
         <span class="logo-sync">sync</span>
       </div>
-      <span class="version-badge">v1.2</span>
+      <div class="header-right">
+        <span class="version-badge">v2.0</span>
+        <button class="settings-btn" onclick="openSettings()">settings</button>
+      </div>
     </div>
     <div class="header-line"></div>
-    <p class="header-sub">paste on one device · copy on another</p>
+    <p class="header-sub">collect URLs on phone · copy all on PC</p>
   </div>
 
-  <!-- Room bar -->
-  <div class="room-bar">
-    <span class="room-label">ROOM</span>
-    <span class="room-code" id="roomDisplay">—</span>
-    <button class="room-btn" onclick="shareRoom()">share</button>
-    <button class="room-btn" onclick="openRoomModal()">change</button>
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span class="status-text" id="statusText">connecting…</span>
+    <span class="status-count" id="statusCount"></span>
   </div>
 
   <!-- Input -->
   <div class="input-box">
-    <textarea id="inputArea" rows="3" placeholder="paste a URL or any text…"></textarea>
+    <textarea id="inputArea" rows="3" placeholder="paste a URL here…"></textarea>
     <div class="input-footer">
-      <span class="input-hint">⌘ + enter to send</span>
-      <button class="send-btn" id="sendBtn" onclick="sendEntry()" disabled>SEND →</button>
+      <span class="input-hint">⌘ + enter to add</span>
+      <button class="send-btn" id="sendBtn" onclick="addEntry()" disabled>ADD →</button>
     </div>
+  </div>
+
+  <!-- Bulk actions -->
+  <div class="bulk-bar">
+    <button class="bulk-btn bulk-copy" id="copyAllBtn" onclick="copyAll()" disabled>COPY ALL</button>
+    <button class="bulk-btn bulk-clear" id="clearAllBtn" onclick="clearAll()" disabled>CLEAR ALL</button>
   </div>
 
   <!-- Entries -->
   <div class="entries" id="entriesList">
-    <div class="empty">nothing here yet<br>paste something from your other device</div>
+    <div class="empty">no URLs yet<br>paste something from your phone</div>
   </div>
 
   <!-- Debug -->
@@ -272,52 +208,80 @@
         <span class="debug-title">EVENTS</span>
         <button class="debug-clear" onclick="clearLog()">clear</button>
       </div>
-      <div class="debug-log" id="debugLog">
-        <span class="log-empty">no events yet</span>
-      </div>
+      <div class="debug-log" id="debugLog"><span class="log-empty">no events yet</span></div>
     </div>
   </div>
 
-  <div class="footer">syncs every 3s · last 10 items · room code is your private channel</div>
+  <div class="footer">syncs every 4s · stored in your GitHub Gist · never auto-clears</div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<div class="modal-overlay" id="roomModal">
+<!-- Setup overlay -->
+<div class="overlay" id="setupOverlay">
   <div class="modal">
-    <h2>Change Room Code</h2>
-    <p>Both devices must use the same room code to sync. Keep it private — anyone with it can read your clips.</p>
-    <input id="roomInput" type="text" placeholder="enter a room code…" maxlength="40" />
+    <h2>Connect to GitHub Gist</h2>
+    <p class="modal-sub">ClipSync uses a private GitHub Gist to sync between your devices. You only need to do this once per device.</p>
+
+    <div class="setup-step">STEP 1 OF 2 — CREATE A TOKEN</div>
+    <p class="modal-sub">Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a>, give it any name, select <strong>gist</strong> scope only, and generate. Paste the token below.</p>
+    <label class="field-label">GITHUB PERSONAL ACCESS TOKEN</label>
+    <input class="field-input" id="setupToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+    <p class="field-note">Stored only in this device's localStorage. Never sent anywhere except GitHub's API.</p>
+
+    <div class="divider"></div>
+
+    <div class="setup-step">STEP 2 OF 2 — GIST ID</div>
+    <p class="modal-sub">Leave blank to auto-create a new private Gist. Or paste an existing Gist ID to share between devices.</p>
+    <label class="field-label">GIST ID (OPTIONAL)</label>
+    <input class="field-input" id="setupGist" type="text" placeholder="leave blank to create new" />
+
     <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeRoomModal()">Cancel</button>
-      <button class="modal-ok" onclick="applyRoom()">Apply</button>
+      <button class="modal-ok" id="setupSaveBtn" onclick="saveSetup()">SAVE & CONNECT</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings overlay -->
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h2>Settings</h2>
+    <p class="modal-sub">Update your GitHub token or Gist ID. Changes apply immediately.</p>
+    <label class="field-label">GITHUB TOKEN</label>
+    <input class="field-input" id="settingsToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+    <label class="field-label">GIST ID</label>
+    <input class="field-input" id="settingsGist" type="text" placeholder="" />
+    <p class="field-note">Share this Gist ID with your other device to sync to the same list.</p>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="modal-ok" onclick="saveSettings()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-  const VERSION  = "v1.2";
-  const API_BASE = "https://kvdb.io";
-  const BUCKET   = "RisDHfATAFjYwkySi9QTy4";
-  const POLL_MS  = 3000;
+  const VERSION   = "v2.0";
+  const GIST_FILE = "clipsync.json";
+  const POLL_MS   = 4000;
 
-  let roomCode  = "";
+  let token     = "";
+  let gistId    = "";
   let entries   = [];
   let pollTimer = null;
-  let prevTopId = null;
+  let prevHash  = "";
   let copiedId  = null;
+  let copiedAll = false;
   let logLines  = [];
   let debugOpen = false;
-  let flashNext = false;
+  let flashIds  = new Set();
 
   // ── Log ──────────────────────────────────────────────
   function log(msg, level = "info") {
     const time = new Date().toTimeString().slice(0, 8);
     logLines.push({ time, msg, level });
-    if (logLines.length > 80) logLines = logLines.slice(-80);
+    if (logLines.length > 100) logLines = logLines.slice(-100);
     if (debugOpen) renderLog();
   }
-
   function renderLog() {
     const el = document.getElementById("debugLog");
     if (!logLines.length) { el.innerHTML = `<span class="log-empty">no events yet</span>`; return; }
@@ -325,9 +289,7 @@
       `<div class="log-line"><span class="log-time">${l.time}</span><span class="log-msg log-${l.level}">${escHtml(l.msg)}</span></div>`
     ).join("");
   }
-
   function clearLog() { logLines = []; renderLog(); }
-
   function toggleDebug() {
     debugOpen = !debugOpen;
     document.getElementById("debugPanel").classList.toggle("open", debugOpen);
@@ -335,122 +297,199 @@
     if (debugOpen) renderLog();
   }
 
+  // ── Status ───────────────────────────────────────────
+  function setStatus(state, text) {
+    const dot  = document.getElementById("statusDot");
+    const txt  = document.getElementById("statusText");
+    dot.className = "status-dot " + state;
+    txt.textContent = text;
+  }
+  function setCount(n) {
+    document.getElementById("statusCount").textContent = n > 0 ? n + " URL" + (n !== 1 ? "s" : "") : "";
+  }
+
   // ── Init ─────────────────────────────────────────────
   function init() {
     log(`ClipSync ${VERSION} started`, "ok");
-    let saved = localStorage.getItem("clipsync_room");
-    if (!saved) {
-      saved = "room-" + Math.random().toString(36).slice(2, 10);
-      localStorage.setItem("clipsync_room", saved);
-      log("new room generated: " + saved, "info");
-    } else {
-      log("room loaded: " + saved, "info");
-    }
-    setRoom(saved);
+    token  = localStorage.getItem("cs_token")  || "";
+    gistId = localStorage.getItem("cs_gist_id") || "";
 
     const ta = document.getElementById("inputArea");
     ta.addEventListener("input", () => {
       document.getElementById("sendBtn").disabled = !ta.value.trim();
     });
     ta.addEventListener("keydown", e => {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) sendEntry();
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addEntry();
     });
 
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js")
+      navigator.serviceWorker.register("./sw.js")
         .then(() => log("service worker registered", "ok"))
         .catch(e => log("service worker error: " + e.message, "warn"));
     }
+
+    if (!token) {
+      log("no token — showing setup", "warn");
+      setStatus("err", "not connected — click settings to set up");
+      document.getElementById("setupOverlay").classList.add("open");
+      return;
+    }
+
+    if (!gistId) {
+      log("no gist ID — will create one", "info");
+      createGist();
+    } else {
+      log("token + gist loaded, starting poll", "info");
+      setStatus("", "connecting…");
+      poll();
+      pollTimer = setInterval(poll, POLL_MS);
+    }
   }
 
-  function setRoom(code) {
-    roomCode = code.trim() || roomCode;
-    localStorage.setItem("clipsync_room", roomCode);
-    document.getElementById("roomDisplay").textContent = roomCode;
-    log("room set to: " + roomCode, "info");
-    prevTopId = null; entries = [];
-    renderEntries();
-    clearInterval(pollTimer);
-    poll();
-    pollTimer = setInterval(poll, POLL_MS);
-  }
-
-  // ── KV ───────────────────────────────────────────────
-  function kvKey() { return encodeURIComponent("cs_" + roomCode); }
-
-  async function kvGet() {
+  // ── GitHub Gist API ──────────────────────────────────
+  async function gistGet() {
     try {
-      const r = await fetch(`${API_BASE}/${BUCKET}/${kvKey()}`);
-      if (r.status === 404) { log("poll → room empty", "info"); return []; }
-      if (!r.ok) { log(`poll → HTTP ${r.status}`, "warn"); return []; }
-      const data = JSON.parse(await r.text());
-      log(`poll → ${data.length} item(s)`, "ok");
-      return data;
-    } catch(e) { log("poll error: " + e.message, "error"); return []; }
-  }
-
-  async function kvSet(data) {
-    try {
-      const r = await fetch(`${API_BASE}/${BUCKET}/${kvKey()}`, {
-        method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(data)
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json" }
       });
-      if (!r.ok) log(`kvSet HTTP ${r.status}`, "warn");
-      else log(`kvSet → saved ${data.length} item(s)`, "ok");
-    } catch(e) { log("kvSet error: " + e.message, "error"); }
+      if (!r.ok) { log(`gistGet HTTP ${r.status}`, "error"); return null; }
+      const data = await r.json();
+      const content = data.files?.[GIST_FILE]?.content;
+      if (!content) { log("gist file empty", "info"); return []; }
+      const parsed = JSON.parse(content);
+      log(`gistGet → ${parsed.length} item(s)`, "ok");
+      return parsed;
+    } catch(e) { log("gistGet error: " + e.message, "error"); return null; }
+  }
+
+  async function gistSet(data) {
+    try {
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
+        method: "PATCH",
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(data) } } })
+      });
+      if (!r.ok) { log(`gistSet HTTP ${r.status}`, "error"); return false; }
+      log(`gistSet → saved ${data.length} item(s)`, "ok");
+      return true;
+    } catch(e) { log("gistSet error: " + e.message, "error"); return false; }
+  }
+
+  async function createGist() {
+    setStatus("warn", "creating gist…");
+    log("creating new gist", "info");
+    try {
+      const r = await fetch("https://api.github.com/gists", {
+        method: "POST",
+        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description: "ClipSync URL queue",
+          public: false,
+          files: { [GIST_FILE]: { content: "[]" } }
+        })
+      });
+      if (!r.ok) {
+        log(`createGist HTTP ${r.status} — bad token?`, "error");
+        setStatus("err", "failed to create gist — check token");
+        return;
+      }
+      const data = await r.json();
+      gistId = data.id;
+      localStorage.setItem("cs_gist_id", gistId);
+      log("gist created: " + gistId, "ok");
+      setStatus("ok", "connected · " + gistId.slice(0, 12) + "…");
+      poll();
+      pollTimer = setInterval(poll, POLL_MS);
+    } catch(e) {
+      log("createGist error: " + e.message, "error");
+      setStatus("err", "network error");
+    }
   }
 
   // ── Poll ─────────────────────────────────────────────
   async function poll() {
-    const data = await kvGet();
-    if (!Array.isArray(data) || data.length === 0) return; // never wipe existing entries on empty/error
-    const topId = data[0]?.id;
-    if (prevTopId !== null && topId && topId !== prevTopId) {
-      flashNext = true;
-      log("new entry detected", "ok");
-    }
-    prevTopId = topId || prevTopId;
-    entries = data;
+    if (!token || !gistId) return;
+    const data = await gistGet();
+    if (data === null) { setStatus("err", "sync error — check debug log"); return; }
+    const hash = JSON.stringify(data);
+    if (hash === prevHash) { setStatus("ok", "synced · " + gistId.slice(0, 12) + "…"); return; }
+    // detect new entries
+    const prevIds = new Set(entries.map(e => e.id));
+    data.forEach(e => { if (!prevIds.has(e.id)) flashIds.add(e.id); });
+    prevHash = hash;
+    entries  = data;
+    setStatus("ok", "synced · " + gistId.slice(0, 12) + "…");
+    setCount(entries.length);
     renderEntries();
+    updateBulkBtns();
   }
 
-  // ── Send ─────────────────────────────────────────────
-  async function sendEntry() {
-    const ta = document.getElementById("inputArea");
+  // ── Add entry ─────────────────────────────────────────
+  async function addEntry() {
+    const ta  = document.getElementById("inputArea");
     const val = ta.value.trim();
-    if (!val) return;
+    if (!val || !token || !gistId) return;
     const btn = document.getElementById("sendBtn");
-    btn.disabled = true; btn.textContent = "sending…";
-    log("sending: " + val.slice(0, 60) + (val.length > 60 ? "…" : ""), "info");
-    const current = await kvGet();
-    const next = [{ id: Date.now(), text: val, ts: Date.now() }, ...current.slice(0, 9)];
-    await kvSet(next);
-    ta.value = ""; btn.textContent = "SEND →"; btn.disabled = true;
-    entries = next; prevTopId = next[0]?.id;
-    renderEntries(); showToast("sent ✓");
-    log("send complete", "ok");
+    btn.disabled = true; btn.textContent = "adding…";
+    log("adding: " + val.slice(0, 60), "info");
+    const next = [...entries, { id: Date.now(), text: val, ts: Date.now() }];
+    const ok   = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulkBtns(); setCount(entries.length); showToast("added ✓"); log("add complete", "ok"); }
+    else { showToast("failed to save"); }
+    ta.value = ""; btn.textContent = "ADD →"; btn.disabled = true;
   }
 
+  // ── Delete ───────────────────────────────────────────
   async function deleteEntry(id) {
     log("deleting id: " + id, "info");
-    entries = entries.filter(e => e.id !== id);
-    await kvSet(entries); renderEntries();
+    const next = entries.filter(e => e.id !== id);
+    const ok   = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulkBtns(); setCount(entries.length); }
   }
 
-  async function copyText(text, id) {
+  // ── Copy All ─────────────────────────────────────────
+  async function copyAll() {
+    if (!entries.length) return;
+    const text = entries.map(e => e.text).join("\n");
     try {
       await navigator.clipboard.writeText(text);
-      log("copied to clipboard", "ok");
+      log(`copied all ${entries.length} URLs`, "ok");
     } catch {
       const el = document.createElement("textarea");
       el.value = text; el.style.cssText = "position:fixed;opacity:0";
       document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
       log("copied via execCommand fallback", "warn");
     }
-    copiedId = id; renderEntries(); showToast("copied to clipboard");
+    copiedAll = true;
+    document.getElementById("copyAllBtn").classList.add("did-copy");
+    document.getElementById("copyAllBtn").textContent = "✓ COPIED ALL";
+    showToast(`copied ${entries.length} URL${entries.length !== 1 ? "s" : ""}`);
+    setTimeout(() => {
+      copiedAll = false;
+      document.getElementById("copyAllBtn").classList.remove("did-copy");
+      document.getElementById("copyAllBtn").textContent = "COPY ALL";
+    }, 2000);
+  }
+
+  // ── Clear All ────────────────────────────────────────
+  async function clearAll() {
+    if (!entries.length) return;
+    if (!confirm(`Delete all ${entries.length} URLs? This cannot be undone.`)) return;
+    log("clearing all entries", "warn");
+    const ok = await gistSet([]);
+    if (ok) { entries = []; prevHash = "[]"; renderEntries(); updateBulkBtns(); setCount(0); showToast("cleared"); }
+  }
+
+  // ── Copy one ─────────────────────────────────────────
+  async function copyOne(text, id) {
+    try { await navigator.clipboard.writeText(text); log("copied single", "ok"); }
+    catch { const el = document.createElement("textarea"); el.value = text; el.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el); }
+    copiedId = id; renderEntries(); showToast("copied");
     setTimeout(() => { copiedId = null; renderEntries(); }, 1800);
   }
 
   // ── Render ───────────────────────────────────────────
+  function isUrl(t) { return /^https?:\/\//i.test(t.trim()); }
   function timeAgo(ts) {
     const d = Math.floor((Date.now() - ts) / 1000);
     if (d < 5) return "just now";
@@ -459,69 +498,83 @@
     return Math.floor(d/3600) + "h ago";
   }
 
-  function isUrl(t) { return /^https?:\/\//i.test(t.trim()); }
-
   function renderEntries() {
     const list = document.getElementById("entriesList");
     if (!entries.length) {
-      list.innerHTML = `<div class="empty">nothing here yet<br>paste something from your other device</div>`;
-      return;
+      list.innerHTML = `<div class="empty">no URLs yet<br>paste something from your phone</div>`;
+      flashIds.clear(); return;
     }
     list.innerHTML = entries.map((e, i) => {
-      const flash  = i === 0 && flashNext ? "new-flash" : "";
+      const flash  = flashIds.has(e.id) ? "new-flash" : "";
       const url    = isUrl(e.text);
       const content = url
-        ? `<a class="entry-text is-url" href="${escHtml(e.text)}" target="_blank" rel="noreferrer">${escHtml(e.text)}</a>`
+        ? `<a class="entry-url" href="${escHtml(e.text)}" target="_blank" rel="noreferrer">${escHtml(e.text)}</a>`
         : `<span class="entry-text">${escHtml(e.text)}</span>`;
       const copied = copiedId === e.id;
       return `<div class="entry ${flash}">
         <div class="entry-inner">
-          <div class="entry-content">
-            ${content}
-            <span class="entry-time">${timeAgo(e.ts)}</span>
-          </div>
+          <span class="entry-num">${i + 1}</span>
+          <div class="entry-content">${content}<span class="entry-time">${timeAgo(e.ts)}</span></div>
           <div class="entry-actions">
-            <button class="copy-btn ${copied ? "did-copy" : ""}" onclick="copyText(${JSON.stringify(e.text)}, ${e.id})">${copied ? "✓ copied" : "copy"}</button>
+            <button class="copy-one-btn ${copied ? "did-copy" : ""}" onclick="copyOne(${JSON.stringify(e.text)}, ${e.id})">${copied ? "✓" : "copy"}</button>
             <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
           </div>
         </div>
       </div>`;
     }).join("");
-    if (flashNext) flashNext = false;
+    flashIds.clear();
+  }
+
+  function updateBulkBtns() {
+    const has = entries.length > 0;
+    document.getElementById("copyAllBtn").disabled  = !has;
+    document.getElementById("clearAllBtn").disabled = !has;
   }
 
   function escHtml(s) {
     return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
   }
 
-  // ── Room modal ───────────────────────────────────────
-  function openRoomModal() {
-    document.getElementById("roomInput").value = roomCode;
-    document.getElementById("roomModal").classList.add("open");
-    setTimeout(() => document.getElementById("roomInput").focus(), 100);
+  // ── Setup ────────────────────────────────────────────
+  async function saveSetup() {
+    const t = document.getElementById("setupToken").value.trim();
+    const g = document.getElementById("setupGist").value.trim();
+    if (!t) { showToast("token is required"); return; }
+    const btn = document.getElementById("setupSaveBtn");
+    btn.disabled = true; btn.textContent = "connecting…";
+    token  = t;
+    gistId = g;
+    localStorage.setItem("cs_token", token);
+    localStorage.setItem("cs_gist_id", gistId);
+    log("setup saved", "ok");
+    document.getElementById("setupOverlay").classList.remove("open");
+    btn.disabled = false; btn.textContent = "SAVE & CONNECT";
+    clearInterval(pollTimer);
+    if (!gistId) { createGist(); }
+    else { poll(); pollTimer = setInterval(poll, POLL_MS); }
   }
-  function closeRoomModal() { document.getElementById("roomModal").classList.remove("open"); }
-  function applyRoom() {
-    const val = document.getElementById("roomInput").value.trim();
-    if (!val) return;
-    setRoom(val); closeRoomModal(); showToast("room changed");
-  }
-  document.getElementById("roomModal").addEventListener("click", e => {
-    if (e.target === document.getElementById("roomModal")) closeRoomModal();
-  });
-  document.getElementById("roomInput").addEventListener("keydown", e => {
-    if (e.key === "Enter") applyRoom();
-    if (e.key === "Escape") closeRoomModal();
-  });
 
-  // ── Share ─────────────────────────────────────────────
-  async function shareRoom() {
-    if (navigator.share) {
-      try { await navigator.share({ title: "ClipSync Room", text: "Join my ClipSync room: " + roomCode }); log("shared via native share", "ok"); return; }
-      catch(e) { log("share cancelled: " + e.message, "info"); }
-    }
-    try { await navigator.clipboard.writeText(roomCode); showToast("room code copied"); log("room code copied", "ok"); }
-    catch { showToast("room: " + roomCode); log("clipboard unavailable", "warn"); }
+  // ── Settings ─────────────────────────────────────────
+  function openSettings() {
+    document.getElementById("settingsToken").value = token;
+    document.getElementById("settingsGist").value  = gistId;
+    document.getElementById("settingsOverlay").classList.add("open");
+  }
+  function closeSettings() { document.getElementById("settingsOverlay").classList.remove("open"); }
+  function saveSettings() {
+    const t = document.getElementById("settingsToken").value.trim();
+    const g = document.getElementById("settingsGist").value.trim();
+    if (!t) { showToast("token cannot be empty"); return; }
+    token  = t; gistId = g;
+    localStorage.setItem("cs_token", token);
+    localStorage.setItem("cs_gist_id", gistId);
+    log("settings saved — gist: " + gistId, "ok");
+    closeSettings();
+    entries = []; prevHash = "";
+    clearInterval(pollTimer);
+    if (!gistId) { createGist(); }
+    else { poll(); pollTimer = setInterval(poll, POLL_MS); }
+    showToast("settings saved");
   }
 
   // ── Toast ─────────────────────────────────────────────
