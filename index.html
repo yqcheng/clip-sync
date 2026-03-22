@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -189,10 +190,12 @@
       display: flex;
       gap: 8px;
       margin-bottom: 24px;
+      flex-wrap: wrap;
     }
 
     .copy-all-btn {
       flex: 1;
+      min-width: 140px;
       background: var(--accent);
       color: #fff;
       border: none;
@@ -205,9 +208,16 @@
       transition: all 0.15s;
       letter-spacing: 0.1px;
     }
-    .copy-all-btn:disabled { background: var(--bg2); color: var(--text-dim); cursor: not-allowed; }
-    .copy-all-btn:not(:disabled):hover { background: var(--accent-hover); }
-    .copy-all-btn.did-copy { background: var(--green); }
+    .copy-all-btn.secondary {
+      background: none;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .copy-all-btn:disabled { background: var(--bg2); color: var(--text-dim); cursor: not-allowed; border-color: transparent; }
+    .copy-all-btn.secondary:disabled { background: none; border-color: var(--border2); color: var(--text-dim); }
+    .copy-all-btn:not(:disabled):hover { background: var(--accent-hover); color: #fff; }
+    .copy-all-btn.secondary:not(:disabled):hover { background: var(--accent-light); }
+    .copy-all-btn.did-copy { background: var(--green); color: #fff; border-color: transparent; }
     .copy-all-btn:not(:disabled):active { transform: scale(0.98); }
 
     .clear-btn {
@@ -541,20 +551,23 @@
       .entry-handle { max-width: 72px; }
     }
   </style>
+
 </head>
 <body>
 <div class="wrap">
 
   <!-- Header -->
+
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.3</span>
+      <span class="version-pill">v3.4</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
 
   <!-- Status -->
+
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
     <span class="status-text" id="statusText">Connecting…</span>
@@ -562,6 +575,7 @@
   </div>
 
   <!-- Input -->
+
   <div class="input-card">
     <textarea id="inputArea" rows="3" placeholder="Paste a URL or RedNote share text…"></textarea>
     <div class="input-footer">
@@ -571,12 +585,15 @@
   </div>
 
   <!-- Bulk -->
+
   <div class="bulk-bar">
-    <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All URLs</button>
+    <button class="copy-all-btn" id="copyProfileBtn" onclick="copyAllProfile()" disabled>Copy Profile URLs</button>
+    <button class="copy-all-btn secondary" id="copyShopBtn" onclick="copyAllShop()" disabled>Copy Shop URLs</button>
     <button class="clear-btn" id="clearAllBtn" onclick="clearAll()" disabled>Clear All</button>
   </div>
 
   <!-- List -->
+
   <div class="section-label" id="sectionLabel" style="display:none">Queue</div>
   <div class="entries" id="entriesList">
     <div class="empty-state">
@@ -586,6 +603,7 @@
   </div>
 
   <!-- Debug -->
+
   <div class="debug-section">
     <button class="debug-toggle" onclick="toggleDebug()">
       <span class="debug-caret" id="debugCaret">▶</span>
@@ -606,6 +624,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- Setup -->
+
 <div class="overlay" id="setupOverlay">
   <div class="sheet">
     <h2>Connect to GitHub</h2>
@@ -627,6 +646,7 @@
 </div>
 
 <!-- Settings -->
+
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
     <h2>Settings</h2>
@@ -643,7 +663,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.3";
+  const VERSION   = "v3.4";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -802,16 +822,28 @@
   }
 
   // ── Copy all ─────────────────────────────────────────
-  async function copyAll() {
+  async function copyAllProfile() {
     if (!entries.length) return;
-    const text = entries.map(e => extractUrl(e.text)).join("\n");
-    try { await navigator.clipboard.writeText(text); }
-    catch { fallbackCopy(text); }
-    const btn = document.getElementById("copyAllBtn");
-    btn.classList.add("did-copy"); btn.textContent = `✓ Copied ${entries.length} URL${entries.length !== 1 ? "s" : ""}`;
-    showToast(`Copied ${entries.length} URL${entries.length !== 1 ? "s" : ""}`);
-    log(`Copied all ${entries.length} URLs`, "ok");
-    setTimeout(() => { btn.classList.remove("did-copy"); btn.textContent = "Copy All URLs"; }, 2200);
+    const text = entries.map(e => extractProfileUrl(e.text)).filter(Boolean).join("\n");
+    try { await navigator.clipboard.writeText(text); } catch { fallbackCopy(text); }
+    const btn = document.getElementById("copyProfileBtn");
+    btn.classList.add("did-copy"); btn.textContent = "✓ Copied";
+    showToast(`Copied ${entries.length} profile URL${entries.length !== 1 ? "s" : ""}`);
+    log(`Copied all profile URLs`, "ok");
+    setTimeout(() => { btn.classList.remove("did-copy"); btn.textContent = "Copy Profile URLs"; }, 2200);
+  }
+
+  async function copyAllShop() {
+    if (!entries.length) return;
+    const shopUrls = entries.map(e => extractShopUrl(e.text)).filter(Boolean);
+    if (!shopUrls.length) { showToast("No shop URLs found"); return; }
+    const text = shopUrls.join("\n");
+    try { await navigator.clipboard.writeText(text); } catch { fallbackCopy(text); }
+    const btn = document.getElementById("copyShopBtn");
+    btn.classList.add("did-copy"); btn.textContent = "✓ Copied";
+    showToast(`Copied ${shopUrls.length} shop URL${shopUrls.length !== 1 ? "s" : ""}`);
+    log(`Copied all shop URLs`, "ok");
+    setTimeout(() => { btn.classList.remove("did-copy"); btn.textContent = "Copy Shop URLs"; }, 2200);
   }
 
   // ── Clear all ─────────────────────────────────────────
@@ -840,17 +872,19 @@
 
   // ── Parse ────────────────────────────────────────────
   function parseEntry(text) {
-    const urlMatch    = text.match(/https?:\/\/\S+/);
-    const handleMatch = text.match(/@[\w\u4e00-\u9fff\u3040-\u30ff]+/);
+    // match all URLs in order
+    const urls = [...text.matchAll(/https?:\/\/\S+/g)]
+      .map(m => m[0].replace(/[,，。）)\]]+$/, ""));
+    // handle: @anything (English, Chinese, Japanese, dots, underscores)
+    const handleMatch = text.match(/@[\w\u4e00-\u9fff\u3040-\u30ff\uff00-\uffef·.]+/);
     return {
-      url:    urlMatch    ? urlMatch[0].replace(/[,，。）)]+$/, "") : null,
-      handle: handleMatch ? handleMatch[0] : null
+      handle:     handleMatch ? handleMatch[0] : null,
+      profileUrl: urls[0] || null,
+      shopUrl:    urls[1] || null,
     };
   }
-  function extractUrl(text) {
-    const { url } = parseEntry(text);
-    return url || text.trim();
-  }
+  function extractProfileUrl(text) { return parseEntry(text).profileUrl || text.trim(); }
+  function extractShopUrl(text)    { return parseEntry(text).shopUrl    || ""; }
 
   // ── Render ───────────────────────────────────────────
   function timeAgo(ts) {
@@ -865,34 +899,39 @@
     const list = document.getElementById("entriesList");
     if (!entries.length) {
       list.innerHTML = `<div class="empty-state"><span class="empty-icon">🔗</span>No URLs yet.<br>Paste something from your phone.</div>`;
+      document.getElementById("sectionLabel").style.display = "none";
       flashIds.clear(); return;
     }
+    document.getElementById("sectionLabel").style.display = "";
     list.innerHTML = entries.map((e, i) => {
-      const flash           = flashIds.has(e.id) ? "new-flash" : "";
-      const { handle, url } = parseEntry(e.text);
-      const copied          = copiedId === e.id;
+      const flash                        = flashIds.has(e.id) ? "new-flash" : "";
+      const { handle, profileUrl, shopUrl } = parseEntry(e.text);
+      const copied                       = copiedId === e.id;
       const handleHtml = handle
         ? `<span class="entry-handle">${escHtml(handle)}</span>`
         : `<span class="entry-handle no-handle">—</span>`;
-      const urlHtml = url
-        ? `<a class="entry-url" href="${escHtml(url)}" target="_blank" rel="noreferrer">${escHtml(url)}</a>`
-        : `<span class="entry-plain">${escHtml(e.text)}</span>`;
+      const profileHtml = profileUrl
+        ? `<a class="entry-url" href="${escHtml(profileUrl)}" target="_blank" rel="noreferrer">${escHtml(profileUrl)}</a>`
+        : `<span class="entry-plain">—</span>`;
+      const shopHtml = shopUrl
+        ? `<a class="entry-url" href="${escHtml(shopUrl)}" target="_blank" rel="noreferrer">${escHtml(shopUrl)}</a>`
+        : `<span class="entry-plain">—</span>`;
       return `<div class="entry ${flash}" data-id="${e.id}">
         <div class="entry-num">${i + 1}</div>
         <div class="entry-handle-col">${handleHtml}</div>
-        <div class="entry-url-col">${urlHtml}</div>
+        <div class="entry-url-col">${profileHtml}</div>
+        <div class="entry-url-col">${shopHtml}</div>
         <div class="entry-meta">
           <button class="copy-one ${copied ? "did-copy" : ""}" data-id="${e.id}">${copied ? "✓" : "Copy"}</button>
           <button class="del-one" data-id="${e.id}" title="Delete">×</button>
         </div>
       </div>`;
     }).join("");
-    // attach events via data attributes — avoids JSON/quote injection in HTML
     list.querySelectorAll(".copy-one").forEach(btn => {
       btn.addEventListener("click", () => {
         const id    = parseInt(btn.dataset.id);
         const entry = entries.find(e => e.id === id);
-        if (entry) copyOne(extractUrl(entry.text), id);
+        if (entry) copyOne(extractProfileUrl(entry.text), id);
       });
     });
     list.querySelectorAll(".del-one").forEach(btn => {
@@ -903,8 +942,9 @@
 
   function updateBulk() {
     const has = entries.length > 0;
-    document.getElementById("copyAllBtn").disabled  = !has;
-    document.getElementById("clearAllBtn").disabled = !has;
+    document.getElementById("copyProfileBtn").disabled = !has;
+    document.getElementById("copyShopBtn").disabled    = !has;
+    document.getElementById("clearAllBtn").disabled    = !has;
   }
 
   function escHtml(s) {
@@ -958,5 +998,6 @@
 
   init();
 </script>
+
 </body>
 </html>
