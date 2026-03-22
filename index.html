@@ -145,18 +145,19 @@
 
     .input-row {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 10px;
       padding: 11px 16px;
     }
     .input-label {
       font-size: 10px;
       font-weight: 600;
-      color: var(--text-dim);
-      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      letter-spacing: 0.4px;
       text-transform: uppercase;
       flex-shrink: 0;
-      width: 58px;
+      width: 44px;
+      padding-top: 3px;
     }
     .input-field {
       flex: 1;
@@ -167,6 +168,7 @@
       font-size: 13px;
       line-height: 1.5;
       padding: 2px 0;
+      resize: none;
       -webkit-appearance: none;
       min-width: 0;
     }
@@ -577,7 +579,7 @@
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.5</span>
+      <span class="version-pill">v3.6</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
@@ -594,16 +596,16 @@
 
   <div class="input-card">
     <div class="input-row">
-      <label class="input-label">Profile share text</label>
+      <label class="input-label">Profile</label>
       <textarea class="input-field" id="inputProfile" rows="2" placeholder="Paste RedNote profile share text…"></textarea>
     </div>
     <div class="input-divider"></div>
     <div class="input-row">
-      <label class="input-label">Shop share text</label>
+      <label class="input-label">Shop</label>
       <textarea class="input-field" id="inputShop" rows="2" placeholder="Paste RedNote shop share text…"></textarea>
     </div>
     <div class="input-footer">
-      <span class="input-hint">Paste raw share text — URLs extracted automatically</span>
+      <span class="input-hint">URLs extracted automatically</span>
       <button class="add-btn" id="sendBtn" onclick="addEntry()" disabled>Add →</button>
     </div>
   </div>
@@ -687,7 +689,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.5";
+  const VERSION   = "v3.6";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -920,8 +922,20 @@
     return m ? m[0] : null;
   }
   function parseEntry(stored) {
-    // stored format: JSON {handle, profileUrl, shopUrl}
-    try { return JSON.parse(stored); } catch { return { handle: null, profileUrl: stored, shopUrl: null }; }
+    try {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.profileUrl !== undefined) return parsed; // new format
+      throw new Error();
+    } catch {
+      // legacy raw text — extract handle and first URL
+      const urlMatch    = stored.match(/https?:\/\/\S+/);
+      const handleMatch = stored.match(/@[\w\u4e00-\u9fff\u3040-\u30ff\uff00-\uffef·.]+/);
+      return {
+        handle:     handleMatch ? handleMatch[0] : null,
+        profileUrl: urlMatch ? urlMatch[0].replace(/[,，。）)\]]+$/, "") : null,
+        shopUrl:    null
+      };
+    }
   }
   function extractProfileUrl(stored) { return parseEntry(stored).profileUrl || ""; }
   function extractShopUrl(stored)    { return parseEntry(stored).shopUrl    || ""; }
