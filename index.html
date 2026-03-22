@@ -1,270 +1,650 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#fafaf8" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="ClipSync" />
   <title>ClipSync</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;1,9..144,300&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;600&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
-      --bg: #0a0a0a; --surface: #0f0f0f; --surface2: #141414;
-      --border: #1e1e1e; --border2: #262626;
-      --text: #e0e0d8; --text-muted: #888880; --text-dim: #333;
-      --green: #3ecf3e; --green-dim: #1a4a1a; --green-border: #2a6a2a;
-      --blue: #4a9aff; --yellow: #f0c040; --red: #cf4e3e;
-      --mono: 'DM Mono', 'Courier New', monospace;
-      --sans: 'DM Sans', system-ui, sans-serif;
+      --bg:           #fafaf8;
+      --bg2:          #f3f3f0;
+      --surface:      #ffffff;
+      --border:       #e8e7e3;
+      --border2:      #d8d7d2;
+      --text:         #1a1a18;
+      --text-muted:   #6b6b68;
+      --text-dim:     #a8a8a4;
+      --accent:       #2f5be8;
+      --accent-light: #eef1fd;
+      --accent-hover: #2448c8;
+      --green:        #1a7a4a;
+      --green-light:  #edf7f2;
+      --red:          #c0392b;
+      --sans: 'Instrument Sans', system-ui, sans-serif;
+      --serif: 'Fraunces', Georgia, serif;
     }
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--mono); -webkit-font-smoothing: antialiased; }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
     body {
-      display: flex; flex-direction: column; align-items: center;
-      padding: env(safe-area-inset-top, 20px) 20px env(safe-area-inset-bottom, 20px);
-      padding-top: max(env(safe-area-inset-top), 32px);
-      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: max(env(safe-area-inset-top), 40px) 24px 60px;
     }
-    .wrap { width: 100%; max-width: 560px; }
 
-    /* Header */
-    .header { margin-bottom: 28px; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .header-logo { display: flex; align-items: baseline; gap: 8px; }
-    .logo-clip { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 4px; color: #444; text-transform: uppercase; }
-    .logo-sync { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 4px; color: var(--green); text-transform: uppercase; }
-    .header-right { display: flex; align-items: center; gap: 8px; }
-    .version-badge { font-family: var(--mono); font-size: 10px; color: #2a2a2a; background: #111; border: 1px solid #1a1a1a; border-radius: 3px; padding: 2px 7px; letter-spacing: 0.5px; user-select: none; }
-    .settings-btn { background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--text-dim); font-family: var(--mono); font-size: 10px; padding: 2px 8px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s; }
-    .settings-btn:hover { color: var(--text-muted); border-color: #333; }
-    .header-line { height: 1px; background: linear-gradient(90deg, #2a7a2a44, transparent); margin-bottom: 8px; }
-    .header-sub { font-size: 11px; color: var(--text-dim); font-family: var(--sans); letter-spacing: 0.3px; }
+    .wrap { width: 100%; max-width: 540px; }
 
-    /* Status bar */
+    /* ── Header ───────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wordmark {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 22px;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      font-style: italic;
+      line-height: 1;
+    }
+    .wordmark em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .version-pill {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-dim);
+      background: var(--bg2);
+      border-radius: 20px;
+      padding: 3px 9px;
+      letter-spacing: 0.3px;
+    }
+
+    .settings-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .settings-btn:hover { background: var(--bg2); border-color: var(--border2); color: var(--text); }
+
+    /* ── Status ───────────────────────────────────── */
     .status-bar {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 12px; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 6px; margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
     }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; transition: background 0.3s; }
-    .status-dot.ok { background: var(--green); }
-    .status-dot.err { background: var(--red); }
-    .status-dot.warn { background: var(--yellow); }
-    .status-text { font-size: 10px; color: var(--text-dim); font-family: var(--sans); flex: 1; }
-    .status-count { font-size: 10px; color: var(--text-dim); font-family: var(--mono); }
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--border2);
+      flex-shrink: 0;
+      transition: background 0.4s;
+    }
+    .status-dot.ok   { background: #34c97a; }
+    .status-dot.err  { background: var(--red); }
+    .status-dot.warn { background: #f0a030; }
+    .status-text  { font-size: 12px; color: var(--text-muted); flex: 1; }
+    .status-count { font-size: 12px; font-weight: 600; color: var(--accent); }
 
-    /* Input */
-    .input-box { border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; background: var(--surface); margin-bottom: 16px; transition: border-color 0.15s; }
-    .input-box:focus-within { border-color: #333; }
-    textarea { width: 100%; background: transparent; border: none; color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.6; padding: 14px 16px; resize: none; letter-spacing: 0.2px; -webkit-appearance: none; }
+    /* ── Input ────────────────────────────────────── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input-card:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light), 0 1px 4px rgba(0,0,0,0.05);
+    }
+
+    textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 16px 18px;
+      resize: none;
+      -webkit-appearance: none;
+    }
     textarea:focus { outline: none; }
-    textarea::placeholder { color: #2e2e2e; }
-    .input-footer { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border); background: #0c0c0c; }
-    .input-hint { font-size: 10px; color: var(--text-dim); font-family: var(--sans); }
-    .send-btn { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); border-radius: 4px; padding: 5px 18px; font-family: var(--mono); font-size: 11px; letter-spacing: 1px; cursor: pointer; transition: all 0.15s; }
-    .send-btn:disabled { background: #111; color: var(--text-dim); border-color: var(--border); cursor: not-allowed; }
-    .send-btn:not(:disabled):active { opacity: 0.7; }
+    textarea::placeholder { color: var(--text-dim); }
 
-    /* Bulk actions */
-    .bulk-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-    .bulk-btn {
-      flex: 1; padding: 8px 12px; border-radius: 5px; font-family: var(--mono);
-      font-size: 11px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.15s; border: 1px solid;
+    .input-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
     }
-    .bulk-copy { background: var(--green-dim); color: var(--green); border-color: var(--green-border); }
-    .bulk-copy:hover { background: #1f5a1f; }
-    .bulk-copy.did-copy { background: #0f3a0f; color: #2aaf2a; }
-    .bulk-copy:disabled { background: #111; color: var(--text-dim); border-color: var(--border); cursor: not-allowed; }
-    .bulk-clear { background: transparent; color: var(--text-dim); border-color: var(--border); }
-    .bulk-clear:hover { color: var(--red); border-color: #3a1a1a; }
-    .bulk-clear:disabled { opacity: 0.3; cursor: not-allowed; }
+    .input-hint { font-size: 11px; color: var(--text-dim); }
 
-    /* Entries */
-    .entries { display: flex; flex-direction: column; gap: 6px; }
-    .empty { border: 1px dashed var(--border); border-radius: 6px; padding: 36px 20px; text-align: center; color: var(--text-dim); font-size: 12px; font-family: var(--sans); line-height: 1.8; }
-    .entry { border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; background: var(--surface); transition: background 0.15s; }
-    .entry:hover { background: var(--surface2); }
-    .entry.new-flash { animation: flashIn 0.8s ease-out; }
-    @keyframes flashIn { 0% { background: #1a2e1a; border-color: #2a5a2a; } 100% { background: var(--surface); border-color: var(--border); } }
-    .entry-inner { display: flex; align-items: flex-start; gap: 10px; }
-    .entry-num { font-size: 10px; color: var(--text-dim); flex-shrink: 0; padding-top: 2px; min-width: 18px; text-align: right; }
-    .entry-content { flex: 1; min-width: 0; }
-    .entry-url { font-size: 12px; color: var(--blue); word-break: break-all; line-height: 1.5; display: block; text-decoration: none; margin-bottom: 3px; }
+    .add-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 18px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .add-btn:disabled { background: var(--bg2); color: var(--text-dim); cursor: not-allowed; }
+    .add-btn:not(:disabled):hover { background: var(--accent-hover); }
+    .add-btn:not(:disabled):active { transform: scale(0.97); }
+
+    /* ── Bulk actions ─────────────────────────────── */
+    .bulk-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .copy-all-btn {
+      flex: 1;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.1px;
+    }
+    .copy-all-btn:disabled { background: var(--bg2); color: var(--text-dim); cursor: not-allowed; }
+    .copy-all-btn:not(:disabled):hover { background: var(--accent-hover); }
+    .copy-all-btn.did-copy { background: var(--green); }
+    .copy-all-btn:not(:disabled):active { transform: scale(0.98); }
+
+    .clear-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text-muted);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 11px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .clear-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .clear-btn:not(:disabled):hover { border-color: var(--red); color: var(--red); background: #fdf5f5; }
+
+    /* ── Entries ──────────────────────────────────── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .entries { display: flex; flex-direction: column; gap: 2px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-dim);
+      font-size: 13px;
+      line-height: 2;
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+    }
+    .empty-icon { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.4; }
+
+    .entry {
+      display: flex;
+      align-items: stretch;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .entry:hover { border-color: var(--border2); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .entry.new-flash { animation: entryIn 0.5s ease-out; }
+
+    @keyframes entryIn {
+      0%   { background: var(--accent-light); border-color: #c0ccf8; }
+      100% { background: var(--surface); border-color: var(--border); }
+    }
+
+    .entry-num {
+      width: 36px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+      background: var(--bg);
+      border-right: 1px solid var(--border);
+    }
+
+    .entry-body {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .entry-handle {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+      max-width: 100px;
+    }
+    .entry-handle.no-handle { color: var(--border2); font-weight: 400; }
+
+    .entry-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .entry-url {
+      font-size: 12px;
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+      line-height: 1.4;
+      flex: 1;
+      min-width: 0;
+    }
     .entry-url:hover { text-decoration: underline; }
-    .entry-text { font-size: 12px; color: #b0b0a8; word-break: break-all; line-height: 1.5; display: block; margin-bottom: 3px; }
-    .entry-row { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
-    .entry-left { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; min-width: 80px; max-width: 120px; }
-    .entry-right { flex: 1; min-width: 0; }
-    .entry-handle { font-size: 11px; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .entry-handle.dim { color: var(--text-dim); }
-    .entry-actions { display: flex; gap: 5px; flex-shrink: 0; }
-    .copy-one-btn { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 10px; font-family: var(--mono); font-size: 10px; cursor: pointer; transition: all 0.15s; -webkit-appearance: none; }
-    .copy-one-btn.did-copy { background: var(--green-dim); color: var(--green); border-color: var(--green-border); }
-    .del-btn { background: transparent; color: var(--text-dim); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; font-family: var(--mono); font-size: 10px; cursor: pointer; opacity: 0; transition: opacity 0.15s; -webkit-appearance: none; }
-    .entry:hover .del-btn { opacity: 1; }
+    .entry-plain {
+      font-size: 12px;
+      color: var(--text-muted);
+      word-break: break-all;
+      line-height: 1.4;
+      flex: 1;
+    }
 
-    /* Debug */
-    .debug-section { margin-top: 28px; }
-    .debug-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; padding: 6px 0; width: 100%; background: none; border: none; color: var(--text-dim); font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-align: left; transition: color 0.15s; }
-    .debug-toggle:hover { color: #444; }
-    .debug-caret { font-size: 8px; transition: transform 0.2s; display: inline-block; }
+    .entry-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 0 10px;
+    }
+
+    .copy-one {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      -webkit-appearance: none;
+    }
+    .copy-one:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+    .copy-one.did-copy { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
+    .del-one {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: all 0.15s;
+      line-height: 1;
+      -webkit-appearance: none;
+    }
+    .entry:hover .del-one { opacity: 1; }
+    .del-one:hover { color: var(--red); background: #fdf5f5; }
+
+    /* ── Debug ────────────────────────────────────── */
+    .debug-section { margin-top: 36px; }
+    .debug-toggle {
+      display: flex; align-items: center; gap: 7px;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-dim); font-family: var(--sans);
+      font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+      padding: 6px 0; text-transform: uppercase; transition: color 0.15s;
+    }
+    .debug-toggle:hover { color: var(--text-muted); }
+    .debug-caret { font-size: 9px; transition: transform 0.2s; }
     .debug-caret.open { transform: rotate(90deg); }
-    .debug-panel { display: none; border: 1px solid var(--border); border-radius: 6px; background: #080808; overflow: hidden; margin-top: 4px; }
+    .debug-panel {
+      display: none; margin-top: 8px;
+      border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); overflow: hidden;
+    }
     .debug-panel.open { display: block; }
-    .debug-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); }
-    .debug-title { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; }
-    .debug-clear { background: none; border: 1px solid var(--border); border-radius: 3px; color: var(--text-dim); font-family: var(--mono); font-size: 9px; padding: 2px 8px; cursor: pointer; }
-    .debug-log { height: 180px; overflow-y: auto; padding: 8px 12px; display: flex; flex-direction: column; gap: 3px; }
-    .debug-log::-webkit-scrollbar { width: 3px; }
-    .debug-log::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
-    .log-line { display: flex; gap: 8px; font-size: 10px; line-height: 1.5; }
-    .log-time { color: #2a2a2a; white-space: nowrap; flex-shrink: 0; }
-    .log-msg { word-break: break-all; }
-    .log-info { color: #3a3a3a; } .log-ok { color: #2a6a2a; } .log-warn { color: #6a5010; } .log-error { color: #6a1a1a; }
-    .log-empty { color: #222; font-size: 10px; font-family: var(--sans); }
+    .debug-head {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 14px; border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .debug-head-label { font-size: 10px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.8px; text-transform: uppercase; }
+    .debug-clr { background: none; border: none; font-family: var(--sans); font-size: 11px; color: var(--text-dim); cursor: pointer; padding: 2px 6px; }
+    .debug-clr:hover { color: var(--text); }
+    .debug-log { height: 160px; overflow-y: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px; }
+    .debug-log::-webkit-scrollbar { width: 4px; }
+    .debug-log::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+    .log-line { display: flex; gap: 10px; font-size: 11px; line-height: 1.5; font-family: 'Courier New', monospace; }
+    .log-ts   { color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
+    .log-msg  { word-break: break-all; }
+    .log-info  { color: var(--text-dim); }
+    .log-ok    { color: #1a7a4a; }
+    .log-warn  { color: #9a6500; }
+    .log-error { color: var(--red); }
+    .log-empty { color: var(--text-dim); font-size: 11px; }
 
-    /* Footer */
-    .footer { margin-top: 16px; margin-bottom: 20px; text-align: center; font-size: 10px; color: #1e1e1e; font-family: var(--sans); }
+    /* ── Footer ───────────────────────────────────── */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.8;
+    }
 
-    /* Toast */
-    .toast { position: fixed; bottom: calc(env(safe-area-inset-bottom) + 24px); left: 50%; transform: translateX(-50%) translateY(20px); background: #1a1a1a; border: 1px solid #2a2a2a; color: var(--text-muted); font-family: var(--sans); font-size: 12px; padding: 8px 18px; border-radius: 20px; opacity: 0; transition: all 0.25s ease; pointer-events: none; white-space: nowrap; z-index: 200; }
+    /* ── Toast ────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom) + 28px);
+      left: 50%; transform: translateX(-50%) translateY(12px);
+      background: var(--text);
+      color: #fff;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 20px;
+      border-radius: 24px;
+      opacity: 0;
+      transition: all 0.2s ease;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 200;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* Setup / modal shared */
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 100; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto; }
+    /* ── Overlays ─────────────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(250,250,248,0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100; align-items: flex-start; justify-content: center;
+      padding: 60px 24px 40px; overflow-y: auto;
+    }
     .overlay.open { display: flex; }
-    .modal { background: #111; border: 1px solid #2a2a2a; border-radius: 10px; padding: 28px; width: 100%; max-width: 480px; }
-    .modal h2 { font-family: var(--sans); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-    .modal-sub { font-size: 11px; color: var(--text-muted); font-family: var(--sans); line-height: 1.7; margin-bottom: 20px; }
-    .modal-sub a { color: var(--blue); }
-    .field-label { font-size: 10px; color: var(--text-dim); letter-spacing: 1px; margin-bottom: 6px; display: block; font-family: var(--sans); }
-    .field-input { width: 100%; background: var(--surface); border: 1px solid var(--border2); border-radius: 5px; color: var(--text); font-family: var(--mono); font-size: 12px; padding: 10px 12px; margin-bottom: 16px; -webkit-appearance: none; }
-    .field-input:focus { outline: none; border-color: #444; }
-    .field-note { font-size: 10px; color: var(--text-dim); font-family: var(--sans); margin-top: -12px; margin-bottom: 16px; line-height: 1.6; }
-    .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
-    .modal-cancel { background: transparent; border: 1px solid var(--border2); color: var(--text-dim); border-radius: 4px; padding: 8px 16px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
-    .modal-ok { background: var(--green-dim); border: 1px solid var(--green-border); color: var(--green); border-radius: 4px; padding: 8px 20px; font-family: var(--mono); font-size: 11px; cursor: pointer; }
-    .modal-ok:disabled { opacity: 0.4; cursor: not-allowed; }
-    .setup-step { font-size: 10px; color: var(--text-dim); font-family: var(--sans); margin-bottom: 20px; }
-    .divider { height: 1px; background: var(--border); margin: 20px 0; }
 
-    @media (max-width: 400px) { .input-hint { display: none; } }
+    .sheet {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+    }
+    .sheet h2 {
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 22px;
+      color: var(--text);
+      margin-bottom: 6px;
+      font-style: italic;
+      letter-spacing: -0.2px;
+    }
+    .sheet-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+    .sheet-sub a { color: var(--accent); }
+    .field-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+    .field-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      padding: 11px 14px;
+      margin-bottom: 20px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none;
+    }
+    .field-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+    .field-note {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-top: -14px;
+      margin-bottom: 20px;
+    }
+    .divider { height: 1px; background: var(--border); margin: 24px 0; }
+    .step-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .sheet-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+    .btn-cancel {
+      background: none; border: 1px solid var(--border2); border-radius: 10px;
+      color: var(--text-muted); font-family: var(--sans); font-size: 13px;
+      font-weight: 500; padding: 9px 18px; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-cancel:hover { background: var(--bg2); }
+    .btn-primary {
+      background: var(--accent); border: none; border-radius: 10px;
+      color: #fff; font-family: var(--sans); font-size: 13px;
+      font-weight: 600; padding: 9px 22px; cursor: pointer; transition: all 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-primary:disabled { background: var(--bg2); color: var(--text-dim); cursor: not-allowed; }
+
+    @media (max-width: 400px) {
+      .input-hint { display: none; }
+      .entry-handle { max-width: 72px; }
+    }
   </style>
+
 </head>
 <body>
 <div class="wrap">
 
   <!-- Header -->
-  <div class="header">
-    <div class="header-top">
-      <div class="header-logo">
-        <span class="logo-clip">◆ clip</span>
-        <span class="logo-sync">sync</span>
-      </div>
-      <div class="header-right">
-        <span class="version-badge">v2.1</span>
-        <button class="settings-btn" onclick="openSettings()">settings</button>
-      </div>
+
+  <header class="header">
+    <div class="wordmark">Clip<em>sync</em></div>
+    <div class="header-right">
+      <span class="version-pill">v3.0</span>
+      <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
-    <div class="header-line"></div>
-    <p class="header-sub">collect URLs on phone · copy all on PC</p>
-  </div>
+  </header>
 
   <!-- Status -->
+
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
-    <span class="status-text" id="statusText">connecting…</span>
+    <span class="status-text" id="statusText">Connecting…</span>
     <span class="status-count" id="statusCount"></span>
   </div>
 
   <!-- Input -->
-  <div class="input-box">
-    <textarea id="inputArea" rows="3" placeholder="paste a URL here…"></textarea>
+
+  <div class="input-card">
+    <textarea id="inputArea" rows="3" placeholder="Paste a URL or RedNote share text…"></textarea>
     <div class="input-footer">
-      <span class="input-hint">⌘ + enter to add</span>
-      <button class="send-btn" id="sendBtn" onclick="addEntry()" disabled>ADD →</button>
+      <span class="input-hint">⌘ Return to add</span>
+      <button class="add-btn" id="sendBtn" onclick="addEntry()" disabled>Add →</button>
     </div>
   </div>
 
-  <!-- Bulk actions -->
+  <!-- Bulk -->
+
   <div class="bulk-bar">
-    <button class="bulk-btn bulk-copy" id="copyAllBtn" onclick="copyAll()" disabled>COPY ALL</button>
-    <button class="bulk-btn bulk-clear" id="clearAllBtn" onclick="clearAll()" disabled>CLEAR ALL</button>
+    <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All URLs</button>
+    <button class="clear-btn" id="clearAllBtn" onclick="clearAll()" disabled>Clear All</button>
   </div>
 
-  <!-- Entries -->
+  <!-- List -->
+
+  <div class="section-label" id="sectionLabel" style="display:none">Queue</div>
   <div class="entries" id="entriesList">
-    <div class="empty">no URLs yet<br>paste something from your phone</div>
+    <div class="empty-state">
+      <span class="empty-icon">🔗</span>
+      No URLs yet.<br>Paste something from your phone.
+    </div>
   </div>
 
   <!-- Debug -->
+
   <div class="debug-section">
     <button class="debug-toggle" onclick="toggleDebug()">
       <span class="debug-caret" id="debugCaret">▶</span>
-      <span>DEBUG LOG</span>
+      Debug Log
     </button>
     <div class="debug-panel" id="debugPanel">
-      <div class="debug-header">
-        <span class="debug-title">EVENTS</span>
-        <button class="debug-clear" onclick="clearLog()">clear</button>
+      <div class="debug-head">
+        <span class="debug-head-label">Events</span>
+        <button class="debug-clr" onclick="clearLog()">Clear</button>
       </div>
-      <div class="debug-log" id="debugLog"><span class="log-empty">no events yet</span></div>
+      <div class="debug-log" id="debugLog"><span class="log-empty">No events yet</span></div>
     </div>
   </div>
 
-  <div class="footer">syncs every 4s · stored in your GitHub Gist · never auto-clears</div>
+  <p class="footer">Syncs every 4s · Stored in your GitHub Gist · Never auto-clears</p>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Setup overlay -->
+<!-- Setup -->
+
 <div class="overlay" id="setupOverlay">
-  <div class="modal">
-    <h2>Connect to GitHub Gist</h2>
-    <p class="modal-sub">ClipSync uses a private GitHub Gist to sync between your devices. You only need to do this once per device.</p>
-
-    <div class="setup-step">STEP 1 OF 2 — CREATE A TOKEN</div>
-    <p class="modal-sub">Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a>, give it any name, select <strong>gist</strong> scope only, and generate. Paste the token below.</p>
-    <label class="field-label">GITHUB PERSONAL ACCESS TOKEN</label>
+  <div class="sheet">
+    <h2>Connect to GitHub</h2>
+    <p class="sheet-sub">ClipSync uses a private GitHub Gist to sync between devices. One-time setup per device.</p>
+    <div class="step-label">Step 1 — Create a token</div>
+    <p class="sheet-sub">Go to <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a>, give it any name, select <strong>gist</strong> scope only, and generate.</p>
+    <label class="field-label">GitHub Personal Access Token</label>
     <input class="field-input" id="setupToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
-    <p class="field-note">Stored only in this device's localStorage. Never sent anywhere except GitHub's API.</p>
-
+    <p class="field-note">Saved only in this device's local storage. Never sent anywhere except GitHub's API.</p>
     <div class="divider"></div>
-
-    <div class="setup-step">STEP 2 OF 2 — GIST ID</div>
-    <p class="modal-sub">Leave blank to auto-create a new private Gist. Or paste an existing Gist ID to share between devices.</p>
-    <label class="field-label">GIST ID (OPTIONAL)</label>
-    <input class="field-input" id="setupGist" type="text" placeholder="leave blank to create new" />
-
-    <div class="modal-btns">
-      <button class="modal-ok" id="setupSaveBtn" onclick="saveSetup()">SAVE & CONNECT</button>
+    <div class="step-label">Step 2 — Gist ID (optional)</div>
+    <p class="sheet-sub">Leave blank to auto-create a new private Gist. To sync with another device, paste its Gist ID here.</p>
+    <label class="field-label">Gist ID</label>
+    <input class="field-input" id="setupGist" type="text" placeholder="Leave blank to create new" />
+    <div class="sheet-btns">
+      <button class="btn-primary" id="setupSaveBtn" onclick="saveSetup()">Save & Connect</button>
     </div>
   </div>
 </div>
 
-<!-- Settings overlay -->
+<!-- Settings -->
+
 <div class="overlay" id="settingsOverlay">
-  <div class="modal">
+  <div class="sheet">
     <h2>Settings</h2>
-    <p class="modal-sub">Update your GitHub token or Gist ID. Changes apply immediately.</p>
-    <label class="field-label">GITHUB TOKEN</label>
+    <p class="sheet-sub">Update your GitHub token or Gist ID. Share the Gist ID with other devices to sync to the same queue.</p>
+    <label class="field-label">GitHub Token</label>
     <input class="field-input" id="settingsToken" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
-    <label class="field-label">GIST ID</label>
-    <input class="field-input" id="settingsGist" type="text" placeholder="" />
-    <p class="field-note">Share this Gist ID with your other device to sync to the same list.</p>
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeSettings()">Cancel</button>
-      <button class="modal-ok" onclick="saveSettings()">Save</button>
+    <label class="field-label">Gist ID</label>
+    <input class="field-input" id="settingsGist" type="text" />
+    <div class="sheet-btns">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-primary" onclick="saveSettings()">Save</button>
     </div>
   </div>
 </div>
 
 <script>
-  const VERSION   = "v2.1";
+  const VERSION   = "v3.0";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -274,7 +654,6 @@
   let pollTimer = null;
   let prevHash  = "";
   let copiedId  = null;
-  let copiedAll = false;
   let logLines  = [];
   let debugOpen = false;
   let flashIds  = new Set();
@@ -288,9 +667,9 @@
   }
   function renderLog() {
     const el = document.getElementById("debugLog");
-    if (!logLines.length) { el.innerHTML = `<span class="log-empty">no events yet</span>`; return; }
+    if (!logLines.length) { el.innerHTML = `<span class="log-empty">No events yet</span>`; return; }
     el.innerHTML = [...logLines].reverse().map(l =>
-      `<div class="log-line"><span class="log-time">${l.time}</span><span class="log-msg log-${l.level}">${escHtml(l.msg)}</span></div>`
+      `<div class="log-line"><span class="log-ts">${l.time}</span><span class="log-msg log-${l.level}">${escHtml(l.msg)}</span></div>`
     ).join("");
   }
   function clearLog() { logLines = []; renderLog(); }
@@ -303,19 +682,18 @@
 
   // ── Status ───────────────────────────────────────────
   function setStatus(state, text) {
-    const dot  = document.getElementById("statusDot");
-    const txt  = document.getElementById("statusText");
-    dot.className = "status-dot " + state;
-    txt.textContent = text;
+    document.getElementById("statusDot").className  = "status-dot " + state;
+    document.getElementById("statusText").textContent = text;
   }
   function setCount(n) {
-    document.getElementById("statusCount").textContent = n > 0 ? n + " URL" + (n !== 1 ? "s" : "") : "";
+    document.getElementById("statusCount").textContent = n > 0 ? `${n} URL${n !== 1 ? "s" : ""}` : "";
+    document.getElementById("sectionLabel").style.display = n > 0 ? "block" : "none";
   }
 
   // ── Init ─────────────────────────────────────────────
   function init() {
     log(`ClipSync ${VERSION} started`, "ok");
-    token  = localStorage.getItem("cs_token")  || "";
+    token  = localStorage.getItem("cs_token")   || "";
     gistId = localStorage.getItem("cs_gist_id") || "";
 
     const ta = document.getElementById("inputArea");
@@ -328,180 +706,148 @@
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js")
-        .then(() => log("service worker registered", "ok"))
-        .catch(e => log("service worker error: " + e.message, "warn"));
+        .then(() => log("Service worker registered", "ok"))
+        .catch(e => log("Service worker error: " + e.message, "warn"));
     }
 
     if (!token) {
-      log("no token — showing setup", "warn");
-      setStatus("err", "not connected — click settings to set up");
+      log("No token — showing setup", "warn");
+      setStatus("err", "Not connected — tap Settings to set up");
       document.getElementById("setupOverlay").classList.add("open");
       return;
     }
-
-    if (!gistId) {
-      log("no gist ID — will create one", "info");
-      createGist();
-    } else {
-      log("token + gist loaded, starting poll", "info");
-      setStatus("", "connecting…");
-      poll();
-      pollTimer = setInterval(poll, POLL_MS);
-    }
+    if (!gistId) { log("No Gist ID — creating one", "info"); createGist(); }
+    else { log("Token + Gist loaded", "info"); setStatus("", "Connecting…"); startPoll(); }
   }
 
-  // ── GitHub Gist API ──────────────────────────────────
+  // ── GitHub API ───────────────────────────────────────
+  function ghHeaders() {
+    return { Authorization: `token ${token}`, Accept: "application/vnd.github+json" };
+  }
+
   async function gistGet() {
     try {
-      const r = await fetch(`https://api.github.com/gists/${gistId}`, {
-        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json" }
-      });
+      const r = await fetch(`https://api.github.com/gists/${gistId}`, { headers: ghHeaders() });
       if (!r.ok) { log(`gistGet HTTP ${r.status}`, "error"); return null; }
-      const data = await r.json();
-      const content = data.files?.[GIST_FILE]?.content;
-      if (!content) { log("gist file empty", "info"); return []; }
-      const parsed = JSON.parse(content);
-      log(`gistGet → ${parsed.length} item(s)`, "ok");
-      return parsed;
+      const content = (await r.json()).files?.[GIST_FILE]?.content;
+      if (!content) { log("Gist file empty", "info"); return []; }
+      const data = JSON.parse(content);
+      log(`Poll → ${data.length} item(s)`, "ok");
+      return data;
     } catch(e) { log("gistGet error: " + e.message, "error"); return null; }
   }
 
   async function gistSet(data) {
     try {
       const r = await fetch(`https://api.github.com/gists/${gistId}`, {
-        method: "PATCH",
-        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+        method: "PATCH", headers: { ...ghHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(data) } } })
       });
       if (!r.ok) { log(`gistSet HTTP ${r.status}`, "error"); return false; }
-      log(`gistSet → saved ${data.length} item(s)`, "ok");
-      return true;
+      log(`Saved ${data.length} item(s)`, "ok"); return true;
     } catch(e) { log("gistSet error: " + e.message, "error"); return false; }
   }
 
   async function createGist() {
-    setStatus("warn", "creating gist…");
-    log("creating new gist", "info");
+    setStatus("warn", "Creating Gist…");
     try {
       const r = await fetch("https://api.github.com/gists", {
-        method: "POST",
-        headers: { Authorization: `token ${token}`, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          description: "ClipSync URL queue",
-          public: false,
-          files: { [GIST_FILE]: { content: "[]" } }
-        })
+        method: "POST", headers: { ...ghHeaders(), "Content-Type": "application/json" },
+        body: JSON.stringify({ description: "ClipSync URL queue", public: false, files: { [GIST_FILE]: { content: "[]" } } })
       });
-      if (!r.ok) {
-        log(`createGist HTTP ${r.status} — bad token?`, "error");
-        setStatus("err", "failed to create gist — check token");
-        return;
-      }
-      const data = await r.json();
-      gistId = data.id;
+      if (!r.ok) { log(`createGist HTTP ${r.status}`, "error"); setStatus("err", "Failed to create Gist — check token"); return; }
+      gistId = (await r.json()).id;
       localStorage.setItem("cs_gist_id", gistId);
-      log("gist created: " + gistId, "ok");
-      setStatus("ok", "connected · " + gistId.slice(0, 12) + "…");
-      poll();
-      pollTimer = setInterval(poll, POLL_MS);
-    } catch(e) {
-      log("createGist error: " + e.message, "error");
-      setStatus("err", "network error");
-    }
+      log("Gist created: " + gistId, "ok");
+      setStatus("ok", "Connected · " + gistId.slice(0, 12) + "…");
+      startPoll();
+    } catch(e) { log("createGist error: " + e.message, "error"); setStatus("err", "Network error"); }
   }
 
   // ── Poll ─────────────────────────────────────────────
+  function startPoll() { poll(); pollTimer = setInterval(poll, POLL_MS); }
+
   async function poll() {
     if (!token || !gistId) return;
     const data = await gistGet();
-    if (data === null) { setStatus("err", "sync error — check debug log"); return; }
+    if (data === null) { setStatus("err", "Sync error — check debug log"); return; }
     const hash = JSON.stringify(data);
-    if (hash === prevHash) { setStatus("ok", "synced · " + gistId.slice(0, 12) + "…"); return; }
-    // detect new entries
+    if (hash === prevHash) { setStatus("ok", "Synced · " + gistId.slice(0, 12) + "…"); return; }
     const prevIds = new Set(entries.map(e => e.id));
     data.forEach(e => { if (!prevIds.has(e.id)) flashIds.add(e.id); });
-    prevHash = hash;
-    entries  = data;
-    setStatus("ok", "synced · " + gistId.slice(0, 12) + "…");
-    setCount(entries.length);
-    renderEntries();
-    updateBulkBtns();
+    prevHash = hash; entries = data;
+    setStatus("ok", "Synced · " + gistId.slice(0, 12) + "…");
+    setCount(entries.length); renderEntries(); updateBulk();
   }
 
-  // ── Add entry ─────────────────────────────────────────
+  // ── Add ──────────────────────────────────────────────
   async function addEntry() {
-    const ta  = document.getElementById("inputArea");
+    const ta = document.getElementById("inputArea");
     const val = ta.value.trim();
     if (!val || !token || !gistId) return;
     const btn = document.getElementById("sendBtn");
-    btn.disabled = true; btn.textContent = "adding…";
-    log("adding: " + val.slice(0, 60), "info");
+    btn.disabled = true; btn.textContent = "Adding…";
+    log("Adding: " + val.slice(0, 60), "info");
     const next = [...entries, { id: Date.now(), text: val, ts: Date.now() }];
-    const ok   = await gistSet(next);
-    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulkBtns(); setCount(entries.length); showToast("added ✓"); log("add complete", "ok"); }
-    else { showToast("failed to save"); }
-    ta.value = ""; btn.textContent = "ADD →"; btn.disabled = true;
+    const ok = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulk(); setCount(entries.length); showToast("Added"); }
+    else showToast("Failed to save");
+    ta.value = ""; btn.textContent = "Add →"; btn.disabled = true;
   }
 
   // ── Delete ───────────────────────────────────────────
   async function deleteEntry(id) {
-    log("deleting id: " + id, "info");
     const next = entries.filter(e => e.id !== id);
-    const ok   = await gistSet(next);
-    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulkBtns(); setCount(entries.length); }
+    const ok = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulk(); setCount(entries.length); }
   }
 
-  // ── Copy All ─────────────────────────────────────────
+  // ── Copy all ─────────────────────────────────────────
   async function copyAll() {
     if (!entries.length) return;
     const text = entries.map(e => extractUrl(e.text)).join("\n");
-    try {
-      await navigator.clipboard.writeText(text);
-      log(`copied all ${entries.length} URLs`, "ok");
-    } catch {
-      const el = document.createElement("textarea");
-      el.value = text; el.style.cssText = "position:fixed;opacity:0";
-      document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
-      log("copied via execCommand fallback", "warn");
-    }
-    copiedAll = true;
-    document.getElementById("copyAllBtn").classList.add("did-copy");
-    document.getElementById("copyAllBtn").textContent = "✓ COPIED ALL";
-    showToast(`copied ${entries.length} URL${entries.length !== 1 ? "s" : ""}`);
-    setTimeout(() => {
-      copiedAll = false;
-      document.getElementById("copyAllBtn").classList.remove("did-copy");
-      document.getElementById("copyAllBtn").textContent = "COPY ALL";
-    }, 2000);
+    try { await navigator.clipboard.writeText(text); }
+    catch { fallbackCopy(text); }
+    const btn = document.getElementById("copyAllBtn");
+    btn.classList.add("did-copy"); btn.textContent = `✓ Copied ${entries.length} URL${entries.length !== 1 ? "s" : ""}`;
+    showToast(`Copied ${entries.length} URL${entries.length !== 1 ? "s" : ""}`);
+    log(`Copied all ${entries.length} URLs`, "ok");
+    setTimeout(() => { btn.classList.remove("did-copy"); btn.textContent = "Copy All URLs"; }, 2200);
   }
 
-  // ── Clear All ────────────────────────────────────────
+  // ── Clear all ─────────────────────────────────────────
   async function clearAll() {
     if (!entries.length) return;
     if (!confirm(`Delete all ${entries.length} URLs? This cannot be undone.`)) return;
-    log("clearing all entries", "warn");
     const ok = await gistSet([]);
-    if (ok) { entries = []; prevHash = "[]"; renderEntries(); updateBulkBtns(); setCount(0); showToast("cleared"); }
+    if (ok) { entries = []; prevHash = "[]"; renderEntries(); updateBulk(); setCount(0); showToast("Cleared"); }
   }
 
   // ── Copy one ─────────────────────────────────────────
   async function copyOne(text, id) {
-    try { await navigator.clipboard.writeText(text); log("copied single", "ok"); }
-    catch { const el = document.createElement("textarea"); el.value = text; el.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el); }
-    copiedId = id; renderEntries(); showToast("copied");
+    const url = extractUrl(text);
+    try { await navigator.clipboard.writeText(url); }
+    catch { fallbackCopy(url); }
+    copiedId = id; renderEntries(); showToast("Copied");
     setTimeout(() => { copiedId = null; renderEntries(); }, 1800);
   }
 
-  // ── Parse entry text ─────────────────────────────────
-  // Extracts { handle, url } from RedNote share text or plain URL
+  function fallbackCopy(text) {
+    const el = document.createElement("textarea");
+    el.value = text; el.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(el); el.select(); document.execCommand("copy"); document.body.removeChild(el);
+    log("Copied via execCommand fallback", "warn");
+  }
+
+  // ── Parse ────────────────────────────────────────────
   function parseEntry(text) {
     const urlMatch    = text.match(/https?:\/\/\S+/);
     const handleMatch = text.match(/@[\w\u4e00-\u9fff\u3040-\u30ff]+/);
-    const url    = urlMatch    ? urlMatch[0].replace(/[,，。）)]+$/, "") : null;
-    const handle = handleMatch ? handleMatch[0] : null;
-    return { handle, url };
+    return {
+      url:    urlMatch    ? urlMatch[0].replace(/[,，。）)]+$/, "") : null,
+      handle: handleMatch ? handleMatch[0] : null
+    };
   }
-
   function extractUrl(text) {
     const { url } = parseEntry(text);
     return url || text.trim();
@@ -511,47 +857,43 @@
   function timeAgo(ts) {
     const d = Math.floor((Date.now() - ts) / 1000);
     if (d < 5) return "just now";
-    if (d < 60) return d + "s ago";
-    if (d < 3600) return Math.floor(d/60) + "m ago";
-    return Math.floor(d/3600) + "h ago";
+    if (d < 60) return `${d}s ago`;
+    if (d < 3600) return `${Math.floor(d/60)}m ago`;
+    return `${Math.floor(d/3600)}h ago`;
   }
 
   function renderEntries() {
     const list = document.getElementById("entriesList");
     if (!entries.length) {
-      list.innerHTML = `<div class="empty">no URLs yet<br>paste something from your phone</div>`;
+      list.innerHTML = `<div class="empty-state"><span class="empty-icon">🔗</span>No URLs yet.<br>Paste something from your phone.</div>`;
       flashIds.clear(); return;
     }
     list.innerHTML = entries.map((e, i) => {
-      const flash          = flashIds.has(e.id) ? "new-flash" : "";
+      const flash           = flashIds.has(e.id) ? "new-flash" : "";
       const { handle, url } = parseEntry(e.text);
-      const copied         = copiedId === e.id;
+      const copied          = copiedId === e.id;
       const handleHtml = handle
-        ? `<span class="entry-handle">${escHtml(handle)}</span>`
-        : `<span class="entry-handle dim">—</span>`;
-      const urlHtml = url
+        ? `<span class="entry-handle">${escHtml(handle)}</span><div class="entry-divider"></div>`
+        : "";
+      const contentHtml = url
         ? `<a class="entry-url" href="${escHtml(url)}" target="_blank" rel="noreferrer">${escHtml(url)}</a>`
-        : `<span class="entry-text">${escHtml(e.text)}</span>`;
+        : `<span class="entry-plain">${escHtml(e.text)}</span>`;
       return `<div class="entry ${flash}">
-        <div class="entry-inner">
-          <span class="entry-num">${i + 1}</span>
-          <div class="entry-content">
-            <div class="entry-row">
-              <div class="entry-left">${handleHtml}<span class="entry-time">${timeAgo(e.ts)}</span></div>
-              <div class="entry-right">${urlHtml}</div>
-            </div>
-          </div>
-          <div class="entry-actions">
-            <button class="copy-one-btn ${copied ? "did-copy" : ""}" onclick="copyOne(${JSON.stringify(extractUrl(e.text))}, ${e.id})">${copied ? "✓" : "copy"}</button>
-            <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
-          </div>
+        <div class="entry-num">${i + 1}</div>
+        <div class="entry-body">
+          ${handleHtml}
+          ${contentHtml}
+        </div>
+        <div class="entry-meta">
+          <button class="copy-one ${copied ? "did-copy" : ""}" onclick="copyOne(${JSON.stringify(e.text)}, ${e.id})">${copied ? "✓" : "Copy"}</button>
+          <button class="del-one" onclick="deleteEntry(${e.id})" title="Delete">×</button>
         </div>
       </div>`;
     }).join("");
     flashIds.clear();
   }
 
-  function updateBulkBtns() {
+  function updateBulk() {
     const has = entries.length > 0;
     document.getElementById("copyAllBtn").disabled  = !has;
     document.getElementById("clearAllBtn").disabled = !has;
@@ -565,19 +907,16 @@
   async function saveSetup() {
     const t = document.getElementById("setupToken").value.trim();
     const g = document.getElementById("setupGist").value.trim();
-    if (!t) { showToast("token is required"); return; }
+    if (!t) { showToast("Token is required"); return; }
     const btn = document.getElementById("setupSaveBtn");
-    btn.disabled = true; btn.textContent = "connecting…";
-    token  = t;
-    gistId = g;
+    btn.disabled = true; btn.textContent = "Connecting…";
+    token = t; gistId = g;
     localStorage.setItem("cs_token", token);
     localStorage.setItem("cs_gist_id", gistId);
-    log("setup saved", "ok");
     document.getElementById("setupOverlay").classList.remove("open");
-    btn.disabled = false; btn.textContent = "SAVE & CONNECT";
+    btn.disabled = false; btn.textContent = "Save & Connect";
     clearInterval(pollTimer);
-    if (!gistId) { createGist(); }
-    else { poll(); pollTimer = setInterval(poll, POLL_MS); }
+    if (!gistId) createGist(); else startPoll();
   }
 
   // ── Settings ─────────────────────────────────────────
@@ -590,17 +929,14 @@
   function saveSettings() {
     const t = document.getElementById("settingsToken").value.trim();
     const g = document.getElementById("settingsGist").value.trim();
-    if (!t) { showToast("token cannot be empty"); return; }
-    token  = t; gistId = g;
+    if (!t) { showToast("Token cannot be empty"); return; }
+    token = t; gistId = g;
     localStorage.setItem("cs_token", token);
     localStorage.setItem("cs_gist_id", gistId);
-    log("settings saved — gist: " + gistId, "ok");
-    closeSettings();
-    entries = []; prevHash = "";
+    closeSettings(); entries = []; prevHash = "";
     clearInterval(pollTimer);
-    if (!gistId) { createGist(); }
-    else { poll(); pollTimer = setInterval(poll, POLL_MS); }
-    showToast("settings saved");
+    if (!gistId) createGist(); else startPoll();
+    showToast("Settings saved");
   }
 
   // ── Toast ─────────────────────────────────────────────
@@ -614,5 +950,6 @@
 
   init();
 </script>
+
 </body>
 </html>
