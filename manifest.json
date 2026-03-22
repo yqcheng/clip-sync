@@ -2,7 +2,7 @@
   "name": "ClipSync",
   "short_name": "ClipSync",
   "description": "Paste on one device, copy on another",
-  "start_url": "/",
+  "start_url": "/clip-sync/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
