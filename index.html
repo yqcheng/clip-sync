@@ -143,20 +143,36 @@
       box-shadow: 0 0 0 3px var(--accent-light), 0 1px 4px rgba(0,0,0,0.05);
     }
 
-    textarea {
-      width: 100%;
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 16px;
+    }
+    .input-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-dim);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      width: 58px;
+    }
+    .input-field {
+      flex: 1;
       background: transparent;
       border: none;
       color: var(--text);
       font-family: var(--sans);
-      font-size: 14px;
-      line-height: 1.6;
-      padding: 16px 18px;
-      resize: none;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 2px 0;
       -webkit-appearance: none;
+      min-width: 0;
     }
-    textarea:focus { outline: none; }
-    textarea::placeholder { color: var(--text-dim); }
+    .input-field:focus { outline: none; }
+    .input-field::placeholder { color: var(--text-dim); }
+    .input-divider { height: 1px; background: var(--border); margin: 0; }
 
     .input-footer {
       display: flex;
@@ -561,7 +577,7 @@
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.4</span>
+      <span class="version-pill">v3.5</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
@@ -577,9 +593,17 @@
   <!-- Input -->
 
   <div class="input-card">
-    <textarea id="inputArea" rows="3" placeholder="Paste a URL or RedNote share text…"></textarea>
+    <div class="input-row">
+      <label class="input-label">Profile share text</label>
+      <textarea class="input-field" id="inputProfile" rows="2" placeholder="Paste RedNote profile share text…"></textarea>
+    </div>
+    <div class="input-divider"></div>
+    <div class="input-row">
+      <label class="input-label">Shop share text</label>
+      <textarea class="input-field" id="inputShop" rows="2" placeholder="Paste RedNote shop share text…"></textarea>
+    </div>
     <div class="input-footer">
-      <span class="input-hint">⌘ Return to add</span>
+      <span class="input-hint">Paste raw share text — URLs extracted automatically</span>
       <button class="add-btn" id="sendBtn" onclick="addEntry()" disabled>Add →</button>
     </div>
   </div>
@@ -663,7 +687,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.4";
+  const VERSION   = "v3.5";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -715,13 +739,16 @@
     token  = localStorage.getItem("cs_token")   || "";
     gistId = localStorage.getItem("cs_gist_id") || "";
 
-    const ta = document.getElementById("inputArea");
-    ta.addEventListener("input", () => {
-      document.getElementById("sendBtn").disabled = !ta.value.trim();
-    });
-    ta.addEventListener("keydown", e => {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addEntry();
-    });
+    const profileInput = document.getElementById("inputProfile");
+    const shopInput    = document.getElementById("inputShop");
+    const checkInputs  = () => {
+      document.getElementById("sendBtn").disabled =
+        !profileInput.value.trim() && !shopInput.value.trim();
+    };
+    profileInput.addEventListener("input", checkInputs);
+    shopInput.addEventListener("input", checkInputs);
+    profileInput.addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addEntry(); });
+    shopInput.addEventListener("keydown",    e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addEntry(); });
 
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js")
@@ -801,17 +828,30 @@
 
   // ── Add ──────────────────────────────────────────────
   async function addEntry() {
-    const ta = document.getElementById("inputArea");
-    const val = ta.value.trim();
-    if (!val || !token || !gistId) return;
+    const profileRaw = document.getElementById("inputProfile").value.trim();
+    const shopRaw    = document.getElementById("inputShop").value.trim();
+    if (!profileRaw && !shopRaw) return;
+    if (!token || !gistId) return;
     const btn = document.getElementById("sendBtn");
     btn.disabled = true; btn.textContent = "Adding…";
-    log("Adding: " + val.slice(0, 60), "info");
-    const next = [...entries, { id: Date.now(), text: val, ts: Date.now() }];
-    const ok = await gistSet(next);
-    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulk(); setCount(entries.length); showToast("Added"); }
-    else showToast("Failed to save");
-    ta.value = ""; btn.textContent = "Add →"; btn.disabled = true;
+
+    const handle     = extractHandleFromText(profileRaw) || extractHandleFromText(shopRaw);
+    const profileUrl = extractUrlFromText(profileRaw);
+    const shopUrl    = extractUrlFromText(shopRaw);
+    const stored     = JSON.stringify({ handle, profileUrl, shopUrl });
+
+    log("Adding: " + (handle || "no handle") + " | " + (profileUrl || "—") + " | " + (shopUrl || "—"), "info");
+    const next = [...entries, { id: Date.now(), text: stored, ts: Date.now() }];
+    const ok   = await gistSet(next);
+    if (ok) {
+      entries = next; prevHash = JSON.stringify(next);
+      renderEntries(); updateBulk(); setCount(entries.length); showToast("Added ✓");
+      document.getElementById("inputProfile").value = "";
+      document.getElementById("inputShop").value    = "";
+    } else {
+      showToast("Failed to save");
+    }
+    btn.textContent = "Add →"; btn.disabled = true;
   }
 
   // ── Delete ───────────────────────────────────────────
@@ -871,20 +911,20 @@
   }
 
   // ── Parse ────────────────────────────────────────────
-  function parseEntry(text) {
-    // match all URLs in order
-    const urls = [...text.matchAll(/https?:\/\/\S+/g)]
-      .map(m => m[0].replace(/[,，。）)\]]+$/, ""));
-    // handle: @anything (English, Chinese, Japanese, dots, underscores)
-    const handleMatch = text.match(/@[\w\u4e00-\u9fff\u3040-\u30ff\uff00-\uffef·.]+/);
-    return {
-      handle:     handleMatch ? handleMatch[0] : null,
-      profileUrl: urls[0] || null,
-      shopUrl:    urls[1] || null,
-    };
+  function extractUrlFromText(text) {
+    const m = text.match(/https?:\/\/\S+/);
+    return m ? m[0].replace(/[,，。）)\]]+$/, "") : null;
   }
-  function extractProfileUrl(text) { return parseEntry(text).profileUrl || text.trim(); }
-  function extractShopUrl(text)    { return parseEntry(text).shopUrl    || ""; }
+  function extractHandleFromText(text) {
+    const m = text.match(/@[\w\u4e00-\u9fff\u3040-\u30ff\uff00-\uffef·.]+/);
+    return m ? m[0] : null;
+  }
+  function parseEntry(stored) {
+    // stored format: JSON {handle, profileUrl, shopUrl}
+    try { return JSON.parse(stored); } catch { return { handle: null, profileUrl: stored, shopUrl: null }; }
+  }
+  function extractProfileUrl(stored) { return parseEntry(stored).profileUrl || ""; }
+  function extractShopUrl(stored)    { return parseEntry(stored).shopUrl    || ""; }
 
   // ── Render ───────────────────────────────────────────
   function timeAgo(ts) {
@@ -904,9 +944,9 @@
     }
     document.getElementById("sectionLabel").style.display = "";
     list.innerHTML = entries.map((e, i) => {
-      const flash                        = flashIds.has(e.id) ? "new-flash" : "";
+      const flash                           = flashIds.has(e.id) ? "new-flash" : "";
       const { handle, profileUrl, shopUrl } = parseEntry(e.text);
-      const copied                       = copiedId === e.id;
+      const copied                          = copiedId === e.id;
       const handleHtml = handle
         ? `<span class="entry-handle">${escHtml(handle)}</span>`
         : `<span class="entry-handle no-handle">—</span>`;
