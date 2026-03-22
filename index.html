@@ -96,7 +96,11 @@
     .entry-url { font-size: 12px; color: var(--blue); word-break: break-all; line-height: 1.5; display: block; text-decoration: none; margin-bottom: 3px; }
     .entry-url:hover { text-decoration: underline; }
     .entry-text { font-size: 12px; color: #b0b0a8; word-break: break-all; line-height: 1.5; display: block; margin-bottom: 3px; }
-    .entry-time { font-size: 10px; color: var(--text-dim); font-family: var(--sans); }
+    .entry-row { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+    .entry-left { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; min-width: 80px; max-width: 120px; }
+    .entry-right { flex: 1; min-width: 0; }
+    .entry-handle { font-size: 11px; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .entry-handle.dim { color: var(--text-dim); }
     .entry-actions { display: flex; gap: 5px; flex-shrink: 0; }
     .copy-one-btn { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border2); border-radius: 4px; padding: 3px 10px; font-family: var(--mono); font-size: 10px; cursor: pointer; transition: all 0.15s; -webkit-appearance: none; }
     .copy-one-btn.did-copy { background: var(--green-dim); color: var(--green); border-color: var(--green-border); }
@@ -162,7 +166,7 @@
         <span class="logo-sync">sync</span>
       </div>
       <div class="header-right">
-        <span class="version-badge">v2.0</span>
+        <span class="version-badge">v2.1</span>
         <button class="settings-btn" onclick="openSettings()">settings</button>
       </div>
     </div>
@@ -260,7 +264,7 @@
 </div>
 
 <script>
-  const VERSION   = "v2.0";
+  const VERSION   = "v2.1";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -450,7 +454,7 @@
   // ── Copy All ─────────────────────────────────────────
   async function copyAll() {
     if (!entries.length) return;
-    const text = entries.map(e => e.text).join("\n");
+    const text = entries.map(e => extractUrl(e.text)).join("\n");
     try {
       await navigator.clipboard.writeText(text);
       log(`copied all ${entries.length} URLs`, "ok");
@@ -488,8 +492,22 @@
     setTimeout(() => { copiedId = null; renderEntries(); }, 1800);
   }
 
+  // ── Parse entry text ─────────────────────────────────
+  // Extracts { handle, url } from RedNote share text or plain URL
+  function parseEntry(text) {
+    const urlMatch    = text.match(/https?:\/\/\S+/);
+    const handleMatch = text.match(/@[\w\u4e00-\u9fff\u3040-\u30ff]+/);
+    const url    = urlMatch    ? urlMatch[0].replace(/[,，。）)]+$/, "") : null;
+    const handle = handleMatch ? handleMatch[0] : null;
+    return { handle, url };
+  }
+
+  function extractUrl(text) {
+    const { url } = parseEntry(text);
+    return url || text.trim();
+  }
+
   // ── Render ───────────────────────────────────────────
-  function isUrl(t) { return /^https?:\/\//i.test(t.trim()); }
   function timeAgo(ts) {
     const d = Math.floor((Date.now() - ts) / 1000);
     if (d < 5) return "just now";
@@ -505,18 +523,26 @@
       flashIds.clear(); return;
     }
     list.innerHTML = entries.map((e, i) => {
-      const flash  = flashIds.has(e.id) ? "new-flash" : "";
-      const url    = isUrl(e.text);
-      const content = url
-        ? `<a class="entry-url" href="${escHtml(e.text)}" target="_blank" rel="noreferrer">${escHtml(e.text)}</a>`
+      const flash          = flashIds.has(e.id) ? "new-flash" : "";
+      const { handle, url } = parseEntry(e.text);
+      const copied         = copiedId === e.id;
+      const handleHtml = handle
+        ? `<span class="entry-handle">${escHtml(handle)}</span>`
+        : `<span class="entry-handle dim">—</span>`;
+      const urlHtml = url
+        ? `<a class="entry-url" href="${escHtml(url)}" target="_blank" rel="noreferrer">${escHtml(url)}</a>`
         : `<span class="entry-text">${escHtml(e.text)}</span>`;
-      const copied = copiedId === e.id;
       return `<div class="entry ${flash}">
         <div class="entry-inner">
           <span class="entry-num">${i + 1}</span>
-          <div class="entry-content">${content}<span class="entry-time">${timeAgo(e.ts)}</span></div>
+          <div class="entry-content">
+            <div class="entry-row">
+              <div class="entry-left">${handleHtml}<span class="entry-time">${timeAgo(e.ts)}</span></div>
+              <div class="entry-right">${urlHtml}</div>
+            </div>
+          </div>
           <div class="entry-actions">
-            <button class="copy-one-btn ${copied ? "did-copy" : ""}" onclick="copyOne(${JSON.stringify(e.text)}, ${e.id})">${copied ? "✓" : "copy"}</button>
+            <button class="copy-one-btn ${copied ? "did-copy" : ""}" onclick="copyOne(${JSON.stringify(extractUrl(e.text))}, ${e.id})">${copied ? "✓" : "copy"}</button>
             <button class="del-btn" onclick="deleteEntry(${e.id})">✕</button>
           </div>
         </div>
