@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -279,13 +278,20 @@
       border-right: 1px solid var(--border);
     }
 
-    .entry-body {
+    .entry-handle-col {
+      flex-shrink: 0;
+      width: 100px;
+      padding: 12px 10px 12px 14px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid var(--border);
+    }
+    .entry-url-col {
       flex: 1;
       min-width: 0;
-      padding: 11px 14px;
+      padding: 12px 14px;
       display: flex;
-      flex-direction: column;
-      gap: 4px;
+      align-items: center;
     }
 
     .entry-handle {
@@ -533,23 +539,20 @@
       .entry-handle { max-width: 72px; }
     }
   </style>
-
 </head>
 <body>
 <div class="wrap">
 
   <!-- Header -->
-
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.1</span>
+      <span class="version-pill">v3.2</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
 
   <!-- Status -->
-
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
     <span class="status-text" id="statusText">Connecting…</span>
@@ -557,7 +560,6 @@
   </div>
 
   <!-- Input -->
-
   <div class="input-card">
     <textarea id="inputArea" rows="3" placeholder="Paste a URL or RedNote share text…"></textarea>
     <div class="input-footer">
@@ -567,14 +569,12 @@
   </div>
 
   <!-- Bulk -->
-
   <div class="bulk-bar">
     <button class="copy-all-btn" id="copyAllBtn" onclick="copyAll()" disabled>Copy All URLs</button>
     <button class="clear-btn" id="clearAllBtn" onclick="clearAll()" disabled>Clear All</button>
   </div>
 
   <!-- List -->
-
   <div class="section-label" id="sectionLabel" style="display:none">Queue</div>
   <div class="entries" id="entriesList">
     <div class="empty-state">
@@ -584,7 +584,6 @@
   </div>
 
   <!-- Debug -->
-
   <div class="debug-section">
     <button class="debug-toggle" onclick="toggleDebug()">
       <span class="debug-caret" id="debugCaret">▶</span>
@@ -605,7 +604,6 @@
 <div class="toast" id="toast"></div>
 
 <!-- Setup -->
-
 <div class="overlay" id="setupOverlay">
   <div class="sheet">
     <h2>Connect to GitHub</h2>
@@ -627,7 +625,6 @@
 </div>
 
 <!-- Settings -->
-
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
     <h2>Settings</h2>
@@ -644,7 +641,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.1";
+  const VERSION   = "v3.2";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -874,22 +871,31 @@
       const copied          = copiedId === e.id;
       const handleHtml = handle
         ? `<span class="entry-handle">${escHtml(handle)}</span>`
-        : "";
-      const contentHtml = url
+        : `<span class="entry-handle no-handle">—</span>`;
+      const urlHtml = url
         ? `<a class="entry-url" href="${escHtml(url)}" target="_blank" rel="noreferrer">${escHtml(url)}</a>`
         : `<span class="entry-plain">${escHtml(e.text)}</span>`;
-      return `<div class="entry ${flash}">
+      return `<div class="entry ${flash}" data-id="${e.id}">
         <div class="entry-num">${i + 1}</div>
-        <div class="entry-body">
-          ${handleHtml}
-          ${contentHtml}
-        </div>
+        <div class="entry-handle-col">${handleHtml}</div>
+        <div class="entry-url-col">${urlHtml}</div>
         <div class="entry-meta">
-          <button class="copy-one ${copied ? "did-copy" : ""}" onclick="copyOne(${JSON.stringify(e.text)}, ${e.id})">${copied ? "✓" : "Copy"}</button>
-          <button class="del-one" onclick="deleteEntry(${e.id})" title="Delete">×</button>
+          <button class="copy-one ${copied ? "did-copy" : ""}" data-id="${e.id}">${copied ? "✓" : "Copy"}</button>
+          <button class="del-one" data-id="${e.id}" title="Delete">×</button>
         </div>
       </div>`;
     }).join("");
+    // attach events via data attributes — avoids JSON/quote injection in HTML
+    list.querySelectorAll(".copy-one").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id    = parseInt(btn.dataset.id);
+        const entry = entries.find(e => e.id === id);
+        if (entry) copyOne(extractUrl(entry.text), id);
+      });
+    });
+    list.querySelectorAll(".del-one").forEach(btn => {
+      btn.addEventListener("click", () => deleteEntry(parseInt(btn.dataset.id)));
+    });
     flashIds.clear();
   }
 
@@ -950,6 +956,5 @@
 
   init();
 </script>
-
 </body>
 </html>
