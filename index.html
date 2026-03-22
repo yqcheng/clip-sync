@@ -426,6 +426,7 @@
     }
     .entry:hover .del-one { opacity: 1; }
     .del-one:hover { color: var(--red); background: #fdf5f5; }
+    @media (hover: none) { .del-one { opacity: 1; } }
 
     /* ── Debug ────────────────────────────────────── */
     .debug-section { margin-top: 36px; }
@@ -604,7 +605,7 @@
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.7</span>
+      <span class="version-pill">v3.8</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
@@ -714,7 +715,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.7";
+  const VERSION   = "v3.8";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
