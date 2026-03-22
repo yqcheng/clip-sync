@@ -284,8 +284,8 @@
       min-width: 0;
       padding: 11px 14px;
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .entry-handle {
@@ -543,7 +543,7 @@
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.0</span>
+      <span class="version-pill">v3.1</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
@@ -644,7 +644,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.0";
+  const VERSION   = "v3.1";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -873,7 +873,7 @@
       const { handle, url } = parseEntry(e.text);
       const copied          = copiedId === e.id;
       const handleHtml = handle
-        ? `<span class="entry-handle">${escHtml(handle)}</span><div class="entry-divider"></div>`
+        ? `<span class="entry-handle">${escHtml(handle)}</span>`
         : "";
       const contentHtml = url
         ? `<a class="entry-url" href="${escHtml(url)}" target="_blank" rel="noreferrer">${escHtml(url)}</a>`
