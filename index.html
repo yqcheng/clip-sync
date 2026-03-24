@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -427,6 +426,27 @@
     .entry:hover .del-one { opacity: 1; }
     .del-one:hover { color: var(--red); background: #fdf5f5; }
     @media (hover: none) { .del-one { opacity: 1; } }
+    .unarchive-btn {
+      background: none; border: none; color: var(--text-dim);
+      font-size: 13px; cursor: pointer; padding: 4px 6px;
+      border-radius: 6px; transition: all 0.15s; -webkit-appearance: none;
+    }
+    .unarchive-btn:hover { color: var(--accent); background: var(--accent-light); }
+
+    /* ── Archive ──────────────────────────────────── */
+    .archive-section { margin-top: 28px; }
+    .archive-toggle {
+      display: flex; align-items: center; gap: 7px;
+      background: none; border: none; cursor: pointer;
+      color: var(--text-dim); font-family: var(--sans);
+      font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+      padding: 6px 0; text-transform: uppercase; transition: color 0.15s; width: 100%;
+    }
+    .archive-toggle:hover { color: var(--text-muted); }
+    .archive-caret { font-size: 9px; transition: transform 0.2s; }
+    .archive-caret.open { transform: rotate(90deg); }
+    .archive-entries { margin-top: 8px; opacity: 0.5; }
+    .archive-entries .entry { background: var(--bg); }
 
     /* ── Debug ────────────────────────────────────── */
     .debug-section { margin-top: 36px; }
@@ -595,23 +615,20 @@
       .entry-handle { max-width: 72px; }
     }
   </style>
-
 </head>
 <body>
 <div class="wrap">
 
   <!-- Header -->
-
   <header class="header">
     <div class="wordmark">Clip<em>sync</em></div>
     <div class="header-right">
-      <span class="version-pill">v3.8</span>
+      <span class="version-pill">v3.9</span>
       <button class="settings-btn" onclick="openSettings()">Settings</button>
     </div>
   </header>
 
   <!-- Status -->
-
   <div class="status-bar">
     <div class="status-dot" id="statusDot"></div>
     <span class="status-text" id="statusText">Connecting…</span>
@@ -619,7 +636,6 @@
   </div>
 
   <!-- Input -->
-
   <div class="input-card">
     <div class="input-row">
       <label class="input-label">Profile</label>
@@ -637,7 +653,6 @@
   </div>
 
   <!-- Bulk -->
-
   <div class="bulk-bar">
     <button class="copy-all-btn" id="copyProfileBtn" onclick="copyAllProfile()" disabled>Copy Profile URLs</button>
     <button class="copy-all-btn secondary" id="copyShopBtn" onclick="copyAllShop()" disabled>Copy Shop URLs</button>
@@ -645,7 +660,6 @@
   </div>
 
   <!-- List -->
-
   <div class="section-label" id="sectionLabel" style="display:none">Queue</div>
   <div class="entries" id="entriesList">
     <div class="empty-state">
@@ -654,8 +668,16 @@
     </div>
   </div>
 
-  <!-- Debug -->
+  <!-- Archive -->
+  <div class="archive-section" id="archiveSection" style="display:none">
+    <button class="archive-toggle" onclick="toggleArchive()">
+      <span class="archive-caret" id="archiveCaret">▶</span>
+      <span id="archiveLabel">Archive</span>
+    </button>
+    <div class="entries archive-entries" id="archiveList" style="display:none"></div>
+  </div>
 
+  <!-- Debug -->
   <div class="debug-section">
     <button class="debug-toggle" onclick="toggleDebug()">
       <span class="debug-caret" id="debugCaret">▶</span>
@@ -676,7 +698,6 @@
 <div class="toast" id="toast"></div>
 
 <!-- Setup -->
-
 <div class="overlay" id="setupOverlay">
   <div class="sheet">
     <h2>Connect to GitHub</h2>
@@ -698,7 +719,6 @@
 </div>
 
 <!-- Settings -->
-
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
     <h2>Settings</h2>
@@ -715,7 +735,7 @@
 </div>
 
 <script>
-  const VERSION   = "v3.8";
+  const VERSION   = "v3.9";
   const GIST_FILE = "clipsync.json";
   const POLL_MS   = 4000;
 
@@ -894,26 +914,37 @@
 
   // ── Copy all ─────────────────────────────────────────
   async function copyAllProfile() {
-    if (!entries.length) return;
-    const text = entries.map(e => extractProfileUrl(e.text)).filter(Boolean).join("\n");
+    const active = entries.filter(e => !e.archived);
+    if (!active.length) { showToast("No new entries to copy"); return; }
+    const text = active.map(e => extractProfileUrl(e.text)).filter(Boolean).join("\n");
+    if (!text) { showToast("No profile URLs found"); return; }
     try { await navigator.clipboard.writeText(text); } catch { fallbackCopy(text); }
+    // archive all active entries
+    const next = entries.map(e => e.archived ? e : { ...e, archived: true, archivedAt: Date.now() });
+    const ok = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulk(); }
     const btn = document.getElementById("copyProfileBtn");
     btn.classList.add("did-copy"); btn.textContent = "✓ Copied";
-    showToast(`Copied ${entries.length} profile URL${entries.length !== 1 ? "s" : ""}`);
-    log(`Copied all profile URLs`, "ok");
+    showToast(`Copied ${active.length} profile URL${active.length !== 1 ? "s" : ""}`);
+    log(`Copied ${active.length} profile URLs → archived`, "ok");
     setTimeout(() => { btn.classList.remove("did-copy"); btn.textContent = "Copy Profile URLs"; }, 2200);
   }
 
   async function copyAllShop() {
-    if (!entries.length) return;
-    const shopUrls = entries.map(e => extractShopUrl(e.text)).filter(Boolean);
+    const active = entries.filter(e => !e.archived);
+    if (!active.length) { showToast("No new entries to copy"); return; }
+    const shopUrls = active.map(e => extractShopUrl(e.text)).filter(Boolean);
     if (!shopUrls.length) { showToast("No shop URLs found"); return; }
     const text = shopUrls.join("\n");
     try { await navigator.clipboard.writeText(text); } catch { fallbackCopy(text); }
+    // archive all active entries
+    const next = entries.map(e => e.archived ? e : { ...e, archived: true, archivedAt: Date.now() });
+    const ok = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulk(); }
     const btn = document.getElementById("copyShopBtn");
     btn.classList.add("did-copy"); btn.textContent = "✓ Copied";
     showToast(`Copied ${shopUrls.length} shop URL${shopUrls.length !== 1 ? "s" : ""}`);
-    log(`Copied all shop URLs`, "ok");
+    log(`Copied ${shopUrls.length} shop URLs → archived`, "ok");
     setTimeout(() => { btn.classList.remove("did-copy"); btn.textContent = "Copy Shop URLs"; }, 2200);
   }
 
@@ -979,58 +1010,96 @@
   }
 
   function renderEntries() {
-    const list = document.getElementById("entriesList");
-    if (!entries.length) {
+    const active   = entries.filter(e => !e.archived);
+    const archived = entries.filter(e => e.archived);
+    const list     = document.getElementById("entriesList");
+
+    document.getElementById("sectionLabel").style.display = active.length ? "" : "none";
+
+    if (!active.length && !archived.length) {
       list.innerHTML = `<div class="empty-state"><span class="empty-icon">🔗</span>No URLs yet.<br>Paste something from your phone.</div>`;
       document.getElementById("sectionLabel").style.display = "none";
-      flashIds.clear(); return;
+    } else if (!active.length) {
+      list.innerHTML = `<div class="empty-state" style="padding:16px 0;font-size:12px">Queue is empty — all entries archived</div>`;
+    } else {
+      list.innerHTML = active.map((e, i) => entryHtml(e, i)).join("");
     }
-    document.getElementById("sectionLabel").style.display = "";
-    list.innerHTML = entries.map((e, i) => {
-      const flash                           = flashIds.has(e.id) ? "new-flash" : "";
-      const { handle, profileUrl, shopUrl } = parseEntry(e.text);
-      const copied                          = copiedId === e.id;
-      const handleHtml = handle
-        ? `<span class="entry-handle">${escHtml(handle)}</span>`
-        : `<span class="entry-handle no-handle">—</span>`;
-      const profileHtml = profileUrl
-        ? `<div class="url-cell"><a class="entry-url" href="${escHtml(profileUrl)}" target="_blank" rel="noreferrer">${escHtml(profileUrl)}</a><button class="copy-url-btn" data-url="${escHtml(profileUrl)}" title="Copy">${COPY_ICON}</button></div>`
-        : `<div class="url-cell"><span class="entry-plain">—</span></div>`;
-      const shopHtml = shopUrl
-        ? `<div class="url-cell"><a class="entry-url" href="${escHtml(shopUrl)}" target="_blank" rel="noreferrer">${escHtml(shopUrl)}</a><button class="copy-url-btn" data-url="${escHtml(shopUrl)}" title="Copy">${COPY_ICON}</button></div>`
-        : `<div class="url-cell"><span class="entry-plain">—</span></div>`;
-      return `<div class="entry ${flash}" data-id="${e.id}">
-        <div class="entry-num">${i + 1}</div>
-        <div class="entry-handle-col">${handleHtml}</div>
-        <div class="entry-url-col">${profileHtml}</div>
-        <div class="entry-url-col">${shopHtml}</div>
-        <div class="entry-meta">
-          <button class="del-one" data-id="${e.id}" title="Delete">×</button>
-        </div>
-      </div>`;
-    }).join("");
-    list.querySelectorAll(".copy-url-btn").forEach(btn => {
+
+    // archive section
+    const archiveSection = document.getElementById("archiveSection");
+    const archiveList    = document.getElementById("archiveList");
+    const archiveLabel   = document.getElementById("archiveLabel");
+    if (archived.length) {
+      archiveSection.style.display = "";
+      archiveLabel.textContent = `Archive (${archived.length})`;
+      archiveList.innerHTML = archived.map((e, i) => entryHtml(e, i, true)).join("");
+    } else {
+      archiveSection.style.display = "none";
+    }
+
+    // attach events
+    document.querySelectorAll(".copy-url-btn").forEach(btn => {
       btn.addEventListener("click", async () => {
         const url = btn.dataset.url;
         try { await navigator.clipboard.writeText(url); } catch { fallbackCopy(url); }
-        const orig = btn.innerHTML;
         btn.innerHTML = CHECK_ICON;
         btn.classList.add("did-copy");
         setTimeout(() => { btn.innerHTML = COPY_ICON; btn.classList.remove("did-copy"); }, 1800);
         showToast("Copied");
       });
     });
-    list.querySelectorAll(".del-one").forEach(btn => {
+    document.querySelectorAll(".del-one").forEach(btn => {
       btn.addEventListener("click", () => deleteEntry(parseInt(btn.dataset.id)));
+    });
+    document.querySelectorAll(".unarchive-btn").forEach(btn => {
+      btn.addEventListener("click", () => unarchiveEntry(parseInt(btn.dataset.id)));
     });
     flashIds.clear();
   }
 
+  function entryHtml(e, i, isArchived = false) {
+    const flash                           = flashIds.has(e.id) ? "new-flash" : "";
+    const { handle, profileUrl, shopUrl } = parseEntry(e.text);
+    const handleHtml = handle
+      ? `<span class="entry-handle">${escHtml(handle)}</span>`
+      : `<span class="entry-handle no-handle">—</span>`;
+    const profileHtml = profileUrl
+      ? `<div class="url-cell"><a class="entry-url" href="${escHtml(profileUrl)}" target="_blank" rel="noreferrer">${escHtml(profileUrl)}</a><button class="copy-url-btn" data-url="${escHtml(profileUrl)}" title="Copy">${COPY_ICON}</button></div>`
+      : `<div class="url-cell"><span class="entry-plain">—</span></div>`;
+    const shopHtml = shopUrl
+      ? `<div class="url-cell"><a class="entry-url" href="${escHtml(shopUrl)}" target="_blank" rel="noreferrer">${escHtml(shopUrl)}</a><button class="copy-url-btn" data-url="${escHtml(shopUrl)}" title="Copy">${COPY_ICON}</button></div>`
+      : `<div class="url-cell"><span class="entry-plain">—</span></div>`;
+    const actionBtn = isArchived
+      ? `<button class="unarchive-btn" data-id="${e.id}" title="Move back to queue">↑</button>`
+      : `<button class="del-one" data-id="${e.id}" title="Delete">×</button>`;
+    return `<div class="entry ${flash}" data-id="${e.id}">
+      <div class="entry-num">${i + 1}</div>
+      <div class="entry-handle-col">${handleHtml}</div>
+      <div class="entry-url-col">${profileHtml}</div>
+      <div class="entry-url-col">${shopHtml}</div>
+      <div class="entry-meta">${actionBtn}</div>
+    </div>`;
+  }
+
+  // ── Unarchive ─────────────────────────────────────────
+  async function unarchiveEntry(id) {
+    const next = entries.map(e => e.id === id ? { ...e, archived: false, archivedAt: undefined } : e);
+    const ok   = await gistSet(next);
+    if (ok) { entries = next; prevHash = JSON.stringify(next); renderEntries(); updateBulk(); setCount(entries.filter(e => !e.archived).length); }
+  }
+
+  let archiveOpen = false;
+  function toggleArchive() {
+    archiveOpen = !archiveOpen;
+    document.getElementById("archiveList").style.display  = archiveOpen ? "" : "none";
+    document.getElementById("archiveCaret").classList.toggle("open", archiveOpen);
+  }
+
   function updateBulk() {
-    const has = entries.length > 0;
-    document.getElementById("copyProfileBtn").disabled = !has;
-    document.getElementById("copyShopBtn").disabled    = !has;
-    document.getElementById("clearAllBtn").disabled    = !has;
+    const hasActive = entries.some(e => !e.archived);
+    document.getElementById("copyProfileBtn").disabled = !hasActive;
+    document.getElementById("copyShopBtn").disabled    = !hasActive;
+    document.getElementById("clearAllBtn").disabled    = !entries.length;
   }
 
   function escHtml(s) {
@@ -1084,6 +1153,5 @@
 
   init();
 </script>
-
 </body>
 </html>
